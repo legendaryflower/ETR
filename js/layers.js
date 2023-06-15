@@ -53,7 +53,7 @@ addLayer("p", {
               let eff = player[this.layer].points.add(1).pow(0.5)
                 if (hasUpgrade("d", 11)) eff = eff.pow(1.5);
                 if (hasUpgrade("d", 12)) eff = eff.pow(1.3);
-                if (hasUpgrade("cb", 13)) eff = eff.mult(2.0);
+                if (hasUpgrade("cb", 13)) eff = eff.pow(1.1);
                 return eff;
             },
             unlocked() { return (hasUpgrade(this.layer, 11))},
@@ -67,7 +67,7 @@ addLayer("p", {
             effect() {
                let eff = player.points.add(1).pow(0.15)
                if (hasUpgrade("d", 12)) eff = eff.pow(1.3);
-               if (hasUpgrade("cb", 13)) eff = eff.mult(2.0);
+               if (hasUpgrade("cb", 13)) eff = eff.pow(1.1);
                return eff;
             },
             unlocked() { return (hasUpgrade(this.layer, 12))},
@@ -79,7 +79,7 @@ addLayer("p", {
             effect() {
                let eff = player.points.add(1).pow(0.25)
                if (hasUpgrade("d", 12)) eff = eff.pow(1.3);
-               if (hasUpgrade("cb", 13)) eff = eff.mult(2.0);
+               if (hasUpgrade("cb", 13)) eff = eff.pow(1.1);
                return eff;
             },
             unlocked() { return (hasUpgrade(this.layer, 22))},
@@ -411,7 +411,7 @@ addLayer("cb", {
     },
     13: {
         title: "Lock Timeout",
-        description: "Machintruc upgrades are 2x stronger.",
+        description: "Machintruc upgrades are ^1.1 stronger.",
         cost: new Decimal(500),
     },
     },
