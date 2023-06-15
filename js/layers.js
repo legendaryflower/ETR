@@ -52,7 +52,8 @@ addLayer("p", {
             effect() {
               let eff = player[this.layer].points.add(1).pow(0.5)
                 if (hasUpgrade("d", 11)) eff = eff.pow(1.5);
-
+                if (hasUpgrade("d", 12)) eff = eff.pow(1.3);
+                if (hasUpgrade("cb", 13)) eff = eff.mult(2.0);
                 return eff;
             },
             unlocked() { return (hasUpgrade(this.layer, 11))},
@@ -64,7 +65,10 @@ addLayer("p", {
             description: "Decrease cogs required for Machintruc system and boost more machintruc system gain",
             cost: new Decimal(50),
             effect() {
-                return player.points.add(1).pow(0.15)
+               let eff = player.points.add(1).pow(0.15)
+               if (hasUpgrade("d", 12)) eff = eff.pow(1.3);
+               if (hasUpgrade("cb", 13)) eff = eff.mult(2.0);
+               return eff;
             },
             unlocked() { return (hasUpgrade(this.layer, 12))},
         },
@@ -73,7 +77,10 @@ addLayer("p", {
             description: "Exponetial trees now have possible generators",
             cost: new Decimal(200),
             effect() {
-                return player.points.add(1).pow(0.25)
+               let eff = player.points.add(1).pow(0.25)
+               if (hasUpgrade("d", 12)) eff = eff.pow(1.3);
+               if (hasUpgrade("cb", 13)) eff = eff.mult(2.0);
+               return eff;
             },
             unlocked() { return (hasUpgrade(this.layer, 22))},
             effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"^" },
@@ -119,6 +126,7 @@ addLayer("g", {
     exponent: 0.5, // Prestige currency exponent
     gainMult() {
         let mult = new Decimal(1)
+        if (hasUpgrade('mo', 13)) mult = mult.times(upgradeEffect('mo', 13))
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -178,6 +186,8 @@ addLayer("g", {
             effect() {
                let eff = player[this.layer].points.add(1).pow(0.5)
                if (hasUpgrade("d", 11)) eff = eff.pow(1.5);
+               if (hasUpgrade("d", 13)) eff = eff.pow(1.2);
+               if (hasUpgrade("mo", 11)) eff = eff.pow(1.5);
                return eff;
             },
             effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" }, // Add formatting to the effect
@@ -191,6 +201,20 @@ addLayer("g", {
             unlocked() { return (hasUpgrade(this.layer, 12))},
             effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" }, // Add formatting to the effect
 
+        },
+        14: {
+            title: "A lack of bank",
+            description: "Generate more cog gains based on your Gears",
+            cost: new Decimal(100),
+            effect() {
+                let eff = player[this.layer].points.add(1).pow(0.75)
+                if (hasUpgrade("d", 11)) eff = eff.pow(1.5);
+                if (hasUpgrade("d", 13)) eff = eff.pow(1.2);
+                if (hasUpgrade("mo", 11)) eff = eff.pow(1.5);
+                return eff;
+             },
+            effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" },
+            unlocked() { return (hasUpgrade(this.layer, 12))},
         },
     },
 
@@ -251,6 +275,7 @@ addLayer("ps", {
             effect() {
                 let eff = new Decimal(1.1);
                 if (hasUpgrade("d", 11)) eff = eff.pow(1.5);
+                if (hasUpgrade("cb", 11)) eff = eff.pow(1.5);
                 return eff;
             },
             effectDisplay() { return "^" + format(this.effect()) }, // Add formatting to the effect
@@ -321,7 +346,164 @@ addLayer("d", {
         title: "ICann Name Collison",
         description: "Upgrades from Machintruc, Gears and Power Stations are ^1.5 stronger",
         cost: new Decimal(3),
+    },
+    12: {
+        title: "Creating CMOS Battery",
+        description: "Upgrades from Machintruc are ^1.3 stronger",
+        cost: new Decimal(10),
+        unlocked() { return (hasUpgrade(this.layer, 11))},
+    },
+    13: {
+        title: "Don't make the battery dead",
+        description: "Upgrades from Gears are ^1.2 stronger",
+        cost: new Decimal(10),
+        unlocked() { return (hasUpgrade(this.layer, 12))},
     },}
+})
+addLayer("cb", {
+    name: "CMOS Battery", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "CB", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
+    }},
+    color: "#9c9a97",
+    requires() { return new Decimal(15000000).times((player.d.unlockOrder&&!player.d.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
+    resource: "CMOS batteries", // Name of prestige currency
+    baseResource: "cogs", // Name of resource prestige is based on
+    baseAmount() {return player.points}, // Get the current amount of baseResource
+    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0.5, // Prestige currency exponent
+    gainMult() {
+        let mult = new Decimal(1)
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        return new Decimal(1)
+    },
+    row: 2, // Row the layer is in on the tree (0 is the first row)
+    branches: ["ps"],
+    hotkeys: [
+        {key: "g", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+  
+    layerShown(){return player.g.unlocked},
+    milestones: {
+        0: {
+            requirementDescription: "2 CMOS batteries",
+            done() { return player.cb.best.gte(2) },
+            effectDescription: "Keep your all Power Station upgrades",
+           
+        },
+    },
+   
+ upgrades: {
+        11: {
+        title: "Power Operation",
+        description: "Power Stations upgrades are ^1.5 stronger",
+        cost: new Decimal(5),
+    },
+    12: {
+        title: "Time Renderer",
+        description: "The cog gain is increased by 4.5x.",
+        cost: new Decimal(100),
+    },
+    13: {
+        title: "Lock Timeout",
+        description: "Machintruc upgrades are 2x stronger.",
+        cost: new Decimal(500),
+    },
+    },
+    buyables: {
+        11: {
+            title: "Long CMOS battery",
+            cost(x) { return new Decimal(1).mul(x) },
+            display() { return "Makes power stations stronger" },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+           
+        },
+       
+    }
+})
+addLayer("mo", {
+    name: "Motherboard", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "MO", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
+    }},
+    color: "#c0d1a5",
+    requires() { return new Decimal(2000000000).times((player.mo.unlockOrder&&!player.mo.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
+    resource: "motherboard connectors", // Name of prestige currency
+    baseResource: "cogs", // Name of resource prestige is based on
+    baseAmount() {return player.points}, // Get the current amount of baseResource
+    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0.5, // Prestige currency exponent
+    gainMult() {
+        let mult = new Decimal(1)
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        return new Decimal(1)
+    },
+    row: 2, // Row the layer is in on the tree (0 is the first row)
+    branches: ["g"],
+    hotkeys: [
+        {key: "g", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+  
+    layerShown(){return player.g.unlocked},
+    buyables: {
+        11: {
+            title: "Add CPU",
+            cost(x) { return new Decimal(1).mul(x) },
+            display() { return "Adds CPU to make motherboards stronger" },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+           
+        },
+        12: {
+            title: "Add GPU",
+            cost(x) { return new Decimal(1).mul(x) },
+            display() { return "Adds GPU to make motherboards stronger" },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+           
+        },
+       
+    },
+ upgrades: {
+        11: {
+        title: "True Gears",
+        description: "Gear upgrades are ^1.5 stronger",
+        cost: new Decimal(2),
+    },
+    12: {
+        title: "Nine Circles",
+        description: "The cog gain multiplier starts at 8x.",
+        cost: new Decimal(45),
+        unlocked() { return (hasUpgrade(this.layer, 11))},
+    },
+    13: {
+        title: "Panko, Beer, Grass, Tempura",
+        description: "The gear's multiplier is improved.",
+        cost: new Decimal(300),
+        unlocked() { return (hasUpgrade(this.layer, 11))},
+    },
+    },
+   
 })
 addLayer("ab", {
 	startData() { return {unlocked: true}},
