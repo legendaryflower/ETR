@@ -116,6 +116,18 @@ addLayer("g", {
     hotkeys: [
         {key: "g", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
+    tabFormat: ["main-display",
+			"prestige-button",
+			"blank",
+			["display-text",
+				function() {return 'You have ' + format(player.g.power) + ' Gears Power, which boosts Cogs generation by '+format(tmp.g.powerEff)+'x'+(tmp.nerdMode?" ((x+1)^"+format(tmp.g.powerExp)+")":"")},
+					{}],
+			"blank",
+			["display-text",
+				function() {return 'Your best Gears is ' + formatWhole(player.g.best) + '<br>You have made a total of '+formatWhole(player.g.total)+" Gears."},
+					{}],
+			"blank",
+			"milestones", "blank", "blank", "upgrades"],
     layerShown(){return true},
     milestones: {
         0: {
@@ -136,6 +148,50 @@ addLayer("g", {
             cost: new Decimal(5),
             
         },
-    
+        12: {
+            title: "The Servant",
+            description: "You can boost more Cogs gain",
+            cost: new Decimal(10),
+           
+            unlocked() { return player.g.unlocked },
+            effect() {
+                return player[this.layer].points.add(1).pow(0.5)
+            },
+            effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" }, // Add formatting to the effect
+      
+        },
     },
+
+})
+addLayer("ps", {
+    name: "Power Supply", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "PS", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
+    }},
+    color: "#56545e",
+    requires() { return new Decimal(1000).times((player.ps.unlockOrder&&!player.ps.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
+    resource: "power stations", // Name of prestige currency
+    baseResource: "cogs", // Name of resource prestige is based on
+    baseAmount() {return player.points}, // Get the current amount of baseResource
+    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0.5, // Prestige currency exponent
+    gainMult() {
+        let mult = new Decimal(1)
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        return new Decimal(1)
+    },
+    row: 1, // Row the layer is in on the tree (0 is the first row)
+    branches: ["p"],
+    hotkeys: [
+        {key: "g", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+  
+    layerShown(){return true},
+   
+ 
 })
