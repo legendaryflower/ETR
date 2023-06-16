@@ -54,6 +54,7 @@ addLayer("p", {
                 if (hasUpgrade("d", 11)) eff = eff.pow(1.5);
                 if (hasUpgrade("d", 12)) eff = eff.pow(1.3);
                 if (hasUpgrade("cb", 13)) eff = eff.pow(1.1);    if (hasUpgrade("re", 11)) eff = eff.pow(1.1);
+                if (hasUpgrade("ps", 13)) eff = eff.pow(2.0);
                 return eff;
             },
             unlocked() { return (hasUpgrade(this.layer, 11))},
@@ -68,6 +69,7 @@ addLayer("p", {
                let eff = player.points.add(1).pow(0.15)
                if (hasUpgrade("d", 12)) eff = eff.pow(1.3);
                if (hasUpgrade("cb", 13)) eff = eff.pow(1.1);    if (hasUpgrade("re", 11)) eff = eff.pow(1.1);
+               if (hasUpgrade("ps", 13)) eff = eff.pow(2.0);
                return eff;
             },
             unlocked() { return (hasUpgrade(this.layer, 12))},
@@ -80,6 +82,7 @@ addLayer("p", {
                let eff = player.points.add(1).pow(0.25)
                if (hasUpgrade("d", 12)) eff = eff.pow(1.3);
                if (hasUpgrade("cb", 13)) eff = eff.pow(1.1);    if (hasUpgrade("re", 11)) eff = eff.pow(1.1);
+               if (hasUpgrade("ps", 13)) eff = eff.pow(2.0);
                return eff;
             },
             unlocked() { return (hasUpgrade(this.layer, 22))},
@@ -282,6 +285,13 @@ addLayer("ps", {
             },
             effectDisplay() { return "^" + format(this.effect()) }, // Add formatting to the effect
 
+    },   
+    13: {
+        title: "Unreachable Milestones",
+        description: "Power Stations Replicanti now boosts Machintruc Upgrades by ^2.0",
+        cost: new Decimal(1e15),
+        unlocked() { return hasMilestone("ps", 1) },
+        
     },
 }
 })
@@ -300,6 +310,12 @@ addLayer("d", {
     baseAmount() {return player.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     exponent: 0.5, // Prestige currency exponent
+    doReset(resettingLayer) {
+        let keep = [];
+     
+        if (hasMilestone("i", 0) && resettingLayer=="i") keep.push("upgrades")
+         if (layers[resettingLayer].row > this.row) layerDataReset("d", keep)
+    },
     gainMult() {
         let mult = new Decimal(1)
    
@@ -318,13 +334,13 @@ addLayer("d", {
     layerShown(){return player.g.unlocked},
     milestones: {
         0: {
-            requirementDescription: "3 Power Stations",
+            requirementDescription: "3 Data Storages",
             done() { return player.d.best.gte(3) },
             effectDescription: "Keep your all Gear upgrades",
            
         },
         1: {
-            requirementDescription: "35 Power Stations",
+            requirementDescription: "35 Data Storages",
             done() { return player.d.best.gte(35) },
             effectDescription: "Unlock the Machintruc Automator",
             toggles: [["m", "auto"]],
@@ -377,6 +393,13 @@ addLayer("cb", {
     resource: "CMOS batteries", // Name of prestige currency
     baseResource: "cogs", // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
+    resetsNothing() { return hasMilestone("i", 1)&&player.ma.current!="cb" },
+    doReset(resettingLayer) {
+        let keep = [];
+     
+        if (hasMilestone("i", 0) && resettingLayer=="i") keep.push("upgrades")
+         if (layers[resettingLayer].row > this.row) layerDataReset("cb", keep)
+    },
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     exponent: 0.5, // Prestige currency exponent
     gainMult() {
@@ -453,7 +476,7 @@ addLayer("mo", {
     exponent: 0.5, // Prestige currency exponent
     gainMult() {
         let mult = new Decimal(1)
-        if (hasUpgrade('re', 11)) mult = mult.times(upgradeEffect('re', 11))
+    
   
         return mult
     },
@@ -551,22 +574,74 @@ addLayer("re", {
     
    
     },
-    upgrades: {
+
         12: {
         title: "More gainier",
         description: "Increase your cog gain based on your current Replicants",
         cost: new Decimal(1000000),
         effect() {
-            let eff = player[this.layer].points.add(1).pow(0.5)
-              return eff;
+            return player[this.layer].points.add(1).pow(0.5)
           },
           unlocked() { return (hasUpgrade(this.layer, 11))},
           effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" }, // Add formatting to the effect
    
     },
    }
-}
+
      })
+     addLayer("i", {
+        name: "Internet", // This is optional, only used in a few places, If absent it just uses the layer id.
+        symbol: "I", // This appears on the layer's node. Default is the id with the first letter capitalized
+        position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+        startData() { return {
+            unlocked: true,
+            points: new Decimal(0),
+        }},
+      
+        color: "#ffffff",
+        requires() { return new Decimal("1e1000").times((player.i.unlockOrder&&!player.i.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
+        resource: "internet connections", // Name of prestige currency
+        baseResource: "cogs", // Name of resource prestige is based on
+        baseAmount() {return player.points}, // Get the current amount of baseResource
+        type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+        exponent: 1, // Prestige currency exponent
+        gainMult() {
+            let mult = new Decimal(1)
+            return mult
+        },
+        gainExp() { // Calculate the exponent on main currency from bonuses
+            return new Decimal(1)
+        },
+        row: 3, // Row the layer is in on the tree (0 is the first row)
+        branches: ["cb"],
+        hotkeys: [
+            {key: "g", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        ],
+      
+        layerShown(){return player.mo.unlocked},
+        milestones: {
+            0: {
+                requirementDescription: "1 Internet Connections",
+                done() { return player.i.best.gte(1) },
+                effectDescription: "Keep your CMOS Battery and Data Storage upgrades",
+               
+            },
+            1: {
+                requirementDescription: "3 Internet Connections",
+                done() { return player.i.best.gte(3) },
+                effectDescription: "CMOS batteries reset nothing.",
+               
+            },
+            2: {
+                requirementDescription: "100 Internet Connections",
+                done() { return player.i.best.gte(100) },
+                effectDescription: "Allows you to modchip CMOS batteries to break Machintruc systems",
+               
+            },
+        },
+         
+    
+         })
 addLayer("ab", {
 	startData() { return {unlocked: true}},
 	color: "yellow",
