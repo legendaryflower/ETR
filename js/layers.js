@@ -110,6 +110,14 @@ addLayer("p", {
             effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" }, // Add formatting to the effect
 
         },
+        31: {
+            title: "Cheap Machines",
+            description: "Boosts Power Stations upgrades by ^1.2",
+            cost: new Decimal("1e1200"),
+           
+            unlocked() { return hasMilestone("ps", 1) },
+
+        },
     },
 })
 addLayer("g", {
@@ -125,12 +133,13 @@ addLayer("g", {
     resource: "gears", // Name of prestige currency
     baseResource: "cogs", // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
-    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     exponent: 0.5, // Prestige currency exponent
     gainMult() {
         let mult = new Decimal(1)
         return mult
     },
+    canBuyMax() { return hasMilestone("g", 1) },
     gainExp() { // Calculate the exponent on main currency from bonuses
         let exp = new Decimal(1)
         if (hasUpgrade("g", 13)) exp = exp.times(1.08);
@@ -159,7 +168,7 @@ addLayer("g", {
 					{}],
 			"blank",
 			"milestones", "blank", "blank", "upgrades"],
-    layerShown(){return true},
+            layerShown(){return player.p.unlocked},
     milestones: {
         0: {
             requirementDescription: "8 Gears",
@@ -169,7 +178,7 @@ addLayer("g", {
         1: {
             requirementDescription: "14 Gears",
             done() { return player.g.best.gte(14) },
-            effectDescription: "You passivily gain Machintruc systems",
+            effectDescription: "You can buy max Gears",
         },
     },
     upgrades: {
@@ -252,7 +261,7 @@ addLayer("ps", {
         {key: "g", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
   
-    layerShown(){return true},
+    layerShown(){return player.p.unlocked},
     milestones: {
         0: {
             requirementDescription: "8 Power Stations",
@@ -263,6 +272,11 @@ addLayer("ps", {
             requirementDescription: "1e10 Power Stations",
             done() { return player.ps.best.gte(1000000000) },
             effectDescription: "Unlock Replicants",
+        },
+        2: {
+            requirementDescription: "1e308 Power Stations",
+            done() { return player.ps.best.gte("1e308") },
+            effectDescription: "Unlock 3 more Replicanti upgrades",
         },
     },
     upgrades: {
@@ -281,6 +295,7 @@ addLayer("ps", {
                 let eff = new Decimal(1.1);
                 if (hasUpgrade("d", 11)) eff = eff.pow(1.5);
                 if (hasUpgrade("cb", 11)) eff = eff.pow(1.5);    if (hasUpgrade("re", 11)) eff = eff.pow(1.1);
+                if (hasUpgrade("p", 31)) eff = eff.pow(1.1);
                 return eff;
             },
             effectDisplay() { return "^" + format(this.effect()) }, // Add formatting to the effect
@@ -292,6 +307,16 @@ addLayer("ps", {
         cost: new Decimal(1e15),
         unlocked() { return hasMilestone("ps", 1) },
         
+    },
+    14: {
+        title: "Solarnia Combustion",
+        description: "Base level gain is powered to ^1.2",
+        cost: new Decimal(1e20),
+        unlocked() { return hasMilestone("ps", 1) },
+        effect() {
+            return new Decimal(1.2);
+        },
+        effectDisplay() { return "^" + format(this.effect()) }, // Add formatting to the effect
     },
 }
 })
@@ -393,7 +418,7 @@ addLayer("cb", {
     resource: "CMOS batteries", // Name of prestige currency
     baseResource: "cogs", // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
-    resetsNothing() { return hasMilestone("i", 1)&&player.ma.current!="cb" },
+    resetsNothing() { return hasMilestone("i", 1)&&player.cb.current!="cb" },
     doReset(resettingLayer) {
         let keep = [];
      
@@ -417,7 +442,7 @@ addLayer("cb", {
         {key: "g", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
   
-    layerShown(){return player.g.unlocked},
+    layerShown(){return player.ps.unlocked},
     milestones: {
         0: {
             requirementDescription: "2 CMOS batteries",
@@ -442,6 +467,12 @@ addLayer("cb", {
         title: "Lock Timeout",
         description: "Machintruc upgrades are ^1.1 stronger.",
         cost: new Decimal(500),
+    },
+    14: {
+        title: "Modchipper",
+        description: "Crackdown any Machintruc and modchip the Power Stations.",
+        cost: new Decimal("1e900"),
+        unlocked() { return hasMilestone("i", 2) },
     },
     },
     buyables: {
