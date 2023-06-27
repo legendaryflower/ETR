@@ -1533,7 +1533,7 @@ addLayer("a", {
         },
         23: {
             name: "Radar Spells",
-            done() { return player.d.points.gte(0) },
+            done() { return player.d.points.gte(1) },
             tooltip: "Reset for Data Storages.",
             image: "images/achs/28.png",
         },
@@ -1547,13 +1547,3 @@ addLayer("a", {
    
 }, 
 )
-const myParticle {
-    image:"options_wheel.png",
-    spread: 20,
-    gravity: 2,
-    time: 3,
-    speed() { // Randomize speed a bit
-        return (Math.random() + 1.2) * 8 
-    },
-
-}
