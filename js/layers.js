@@ -16,7 +16,8 @@ addLayer("p", {
     gainMult() {
         let mult = new Decimal(1)
         if (hasUpgrade('p', 13)) mult = mult.times(upgradeEffect('p', 13))
-  
+        gearEff = player.g.best.add(1).pow(0.75);
+        mult = mult.times(gearEff);
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -33,7 +34,7 @@ addLayer("p", {
     passiveGeneration() { return (hasMilestone("g", 1))?1:0 },
     doReset(resettingLayer) {
         let keep = [];
-     
+        if (hasMilestone("d", 1) && resettingLayer=="d") keep.push("upgrades")
         if (hasMilestone("g", 0) && resettingLayer=="g") keep.push("upgrades")
         if (hasMilestone("ps", 0) && resettingLayer=="ps") keep.push("upgrades")
         if (hasMilestone("da", 0) && resettingLayer=="da") keep.push("upgrades")
@@ -57,22 +58,31 @@ addLayer("p", {
         },
         12: {
             title: "Cog Booster",
-            description: "Increase your cog gain based on your current Machintruc Systems.",
+            description: "Increase your cog gain based on your current Machintruc Systems (Halves sometime in high boundaries)",
             cost: new Decimal(20),
             effect() {
               let eff = player[this.layer].points.add(1).pow(0.5)
                 if (hasUpgrade("d", 11)) eff = eff.pow(1.5);
                 if (hasUpgrade("d", 12)) eff = eff.pow(1.3);
                 if (hasUpgrade("cb", 13)) eff = eff.pow(1.1);    if (hasUpgrade("re", 11)) eff = eff.pow(1.1);
-                if (hasUpgrade("ps", 13)) eff = eff.pow(2.0);
+                if (hasUpgrade("ps", 13)) eff = eff.pow(1.075);
                 if (inChallenge("d", 11)) eff = eff.pow(0.25);
                 if (hasUpgrade("mo", 14)) eff = eff.pow(1.3);
                 if (hasAchievement("a", 15)) eff = eff.pow(1.01);
+                if (inChallenge("d", 21)) eff = eff.pow(0);
+                if (inChallenge("d", 31)) eff = eff.pow(0);
+                if (hasChallenge("d", 21)) eff = eff.pow(1.1);
+                if (eff.gte(1e95)) eff = eff.div(1e55).log2().plus(1e125)
                 return eff;
             
             },
             unlocked() { return (hasUpgrade(this.layer, 11))},
             effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" }, // Add formatting to the effect
+            formula() {
+                let exp = new Decimal(1);
+               if (hasUpgrade("ps", 15)) exp = exp.times(upgradeEffect("ps", 15));
+                return "(log(x+1)^0.75+1)"+(exp.gt(1)?("^"+format(exp)):"")
+            }
 
         },
         13: {
@@ -83,9 +93,13 @@ addLayer("p", {
                let eff = player.points.add(1).pow(0.15)
                if (hasUpgrade("d", 12)) eff = eff.pow(1.3);
                if (hasUpgrade("cb", 13)) eff = eff.pow(1.1);    if (hasUpgrade("re", 11)) eff = eff.pow(1.1);
-               if (hasUpgrade("ps", 13)) eff = eff.pow(2.0);
+           
                if (inChallenge("d", 11)) eff = eff.pow(0.25);
                if (hasAchievement("a", 15)) eff = eff.pow(1.01);
+                            if (hasUpgrade("ps", 21)) eff = eff.pow(1.6);
+                            if (inChallenge("d", 22)) eff = eff.pow(0.65);
+                            if (inChallenge("g", 15)) eff = eff.pow(1.11);
+                            if (inChallenge("d", 31)) eff = eff.pow(0);
                return eff;
             },
             unlocked() { return (hasUpgrade(this.layer, 12))},
@@ -98,9 +112,10 @@ addLayer("p", {
                let eff = player.points.add(1).pow(0.25)
                if (hasUpgrade("d", 12)) eff = eff.pow(1.3);
                if (hasUpgrade("cb", 13)) eff = eff.pow(1.1);    if (hasUpgrade("re", 11)) eff = eff.pow(1.1);
-               if (hasUpgrade("ps", 13)) eff = eff.pow(2.0);
+          
                if (inChallenge("d", 11)) eff = eff.pow(0.25);
                if (hasAchievement("a", 15)) eff = eff.pow(1.01);
+               if (inChallenge("d", 31)) eff = eff.pow(0);
                return eff;
             },
             unlocked() { return (hasUpgrade(this.layer, 22))},
@@ -113,6 +128,8 @@ addLayer("p", {
             effect() { 
                 let eff = player.points.plus(1).log10().pow(0.75).plus(1);
                 if (hasAchievement("a", 15)) eff = eff.pow(1.01);
+                if (inChallenge("d", 31)) eff = eff.pow(0);
+
                 return eff;
             },
             unlocked() { return hasUpgrade("p", 12) },
@@ -145,7 +162,7 @@ addLayer("p", {
             description: "Boosts Power Stations upgrades by ^1.2",
             cost: new Decimal("1e1200"),
            
-            unlocked() { return hasMilestone("ps", 1) },
+            unlocked() { return hasMilestone("ps", 2) },
 
         },
         32: {
@@ -180,14 +197,146 @@ addLayer("p", {
             unlocked() { return (hasUpgrade(this.layer, 34))},
 
         },
+         42: {
+            title: "Superbooster",
+            description: "Cog gain is raised to the power of ^1.2 and Machintruc Upgrade 3's forumla is improved",
+            cost: new Decimal("4.75e9"),
+           
+             unlocked() { return hasUpgrade("ps", 22) },
+
+        },
     },
+})
+
+addLayer("ps", {
+    name: "Power Supply", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "PS", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: false,
+		points: new Decimal(0),
+    }},
+    autoPrestige() { return (hasMilestone("d", 2) && player.ps.auto)},
+    canBuyMax() { return hasMilestone("ps", 1) },
+    color: "#56545e",
+    requires() { return new Decimal(1000).times((player.ps.unlockOrder&&!player.ps.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
+    resource: "power stations", // Name of prestige currency
+    baseResource: "cogs", // Name of resource prestige is based on
+    baseAmount() {return player.points}, // Get the current amount of baseResource
+    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0.5, // Prestige currency exponent
+    resetsNothing() { return hasMilestone("i", 1)&&player.cb.current!="cb" },
+    gainMult() {
+        let mult = new Decimal(1)
+  
+  
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        return new Decimal(1)
+    },
+    row: 1, // Row the layer is in on the tree (0 is the first row)
+    branches: ["p"],
+    hotkeys: [
+        {key: "g", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+
+    doReset(resettingLayer) {
+        let keep = [];
+     
+       
+        if (hasMilestone("d", 0)) keep.push("milestones")
+        if (hasMilestone("bo", 0)) keep.push("milestones")
+         if (layers[resettingLayer].row > this.row) layerDataReset("ps", keep)
+    },
+    layerShown(){return player.p.unlocked},
+    
+    milestones: {
+        0: {
+            requirementDescription: "8 Power Stations",
+            done() { return player.ps.best.gte(8) },
+            effectDescription: "Keep Machintruc Upgrades on reset.",
+        },
+       
+        1: {
+            requirementDescription: "1e10 Power Stations",
+            done() { return player.ps.best.gte(1000000000) },
+            effectDescription: "Unlock Replicants",
+        },
+        2: {
+            requirementDescription: "1e308 Power Stations",
+            done() { return player.ps.best.gte("1e308") },
+            effectDescription: "Unlock 3 more Replicanti upgrades",
+        },
+    },
+    upgrades: {
+        11: {
+            title: "Cog Generator but in Power Station",
+            description: "Every tree layer that resets Machintruc system now has 2x starting cog gain",
+            cost: new Decimal(1),
+            
+        },
+    12: {
+        title: "Upgrade Machine",
+            description: "Base level gain is powered to ^1.1",
+            cost: new Decimal(3),
+            unlocked() { return player[this.layer].unlocked },
+            effect() {
+                let eff = new Decimal(1.1);
+                if (hasUpgrade("d", 11)) eff = eff.pow(1.5);
+                if (hasUpgrade("cb", 11)) eff = eff.pow(1.5);    if (hasUpgrade("re", 11)) eff = eff.pow(1.1);
+                if (hasUpgrade("p", 31)) eff = eff.pow(1.1);
+                if (hasUpgrade("p", 34)) eff = eff.pow(1.1);
+                if (inChallenge("q", 12)) eff = eff.pow(0.001);
+                return eff;
+            },
+            effectDisplay() { return "^" + format(this.effect()) }, // Add formatting to the effect
+
+    },   
+   
+    13: {
+        title: "Solarnia Combustion",
+        description: "Base level gain is powered to ^1.2",
+        cost: new Decimal(1e20),
+        unlocked() { return hasMilestone("ps", 1) },
+        effect() {
+           let eff = new Decimal(1.2);
+            if (hasUpgrade("p", 34)) eff = eff.pow(1.1);
+            if (inChallenge("q", 12)) eff = eff.pow(0.001);
+            if (inChallenge("d", 22)) eff = eff.pow(0.75);
+            return eff;
+        },
+        effectDisplay() { return "^" + format(this.effect()) }, // Add formatting to the effect
+    },
+     15: {
+        title: "Bigger Spears",
+        description: "The Machintruc Upgrade 2's forumla is better",
+        cost: new Decimal(500),
+        unlocked() { return hasUpgrade("ps", 12) },
+        
+    },
+      21: {
+        title: "Eternazlied Upgrades",
+        description: "The Machintruc Upgrade 3's effect power is better",
+        cost: new Decimal(3000),
+        unlocked() { return hasUpgrade("ps", 15) },
+        
+    },
+     22: {
+        title: "Massive Energy",
+        description: "Unlock a new Machintruc Upgrade that increases the cog gain to the power of ^1.25",
+        cost: new Decimal(1.75e9),
+        unlocked() { return hasUpgrade("ps", 21) },
+        
+    },
+}
 })
 addLayer("g", {
     name: "Gears", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "G", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
-        unlocked: true,
+        unlocked: false,
 		points: new Decimal(0),
     }},
     color: "#361bbf",
@@ -208,11 +357,13 @@ addLayer("g", {
         if (hasUpgrade("g", 13)) exp = exp.times(1.08);
         return exp;
     },
+    base: 2.25,
     row: 1, // Row the layer is in on the tree (0 is the first row)
     branches: ["p"],
     hotkeys: [
         {key: "g", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
+
     doReset(resettingLayer) {
         let keep = [];
      
@@ -259,11 +410,13 @@ addLayer("g", {
                 let power = new Decimal(1);           return power;
             },
             effect() {
-      return new Decimal(1);
+                eff = player[this.layer].best.add(1).pow(0.75);
+
+   
            
             },
             effectDescription() {
-                return "Bush"
+                return "translates to boost cog generation by x"+format(tmp.g.effect)+""
             },
     milestones: {
         0: {
@@ -303,6 +456,7 @@ addLayer("g", {
                if (hasUpgrade("re", 11)) eff = eff.pow(1.1);
                if (hasUpgrade("p", 34)) eff = eff.pow(1.1);
                if (inChallenge("d", 11)) eff = eff.pow(0.25);
+           
                return eff;
             },
             effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" }, // Add formatting to the effect
@@ -334,116 +488,13 @@ addLayer("g", {
             unlocked() { return (hasUpgrade(this.layer, 12))},
         },
         15: {
-            title: "Cog Supergenerator",
-            description: "Increase your cog gain based on your unspent Gear.",
+            title: "Super Gear",
+            description: "The Machintruc Upgrade 2 is raised to the power of ^1.11",
             cost: new Decimal(450),
             unlocked() { return hasChallenge("d", 11) },
         },
     },
 
-})
-addLayer("ps", {
-    name: "Power Supply", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "PS", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
-    startData() { return {
-        unlocked: true,
-		points: new Decimal(0),
-    }},
-    color: "#56545e",
-    requires() { return new Decimal(1000).times((player.ps.unlockOrder&&!player.ps.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
-    resource: "power stations", // Name of prestige currency
-    baseResource: "cogs", // Name of resource prestige is based on
-    baseAmount() {return player.points}, // Get the current amount of baseResource
-    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 0.5, // Prestige currency exponent
-    resetsNothing() { return hasMilestone("i", 1)&&player.cb.current!="cb" },
-    gainMult() {
-        let mult = new Decimal(1)
-  
-  
-        return mult
-    },
-    gainExp() { // Calculate the exponent on main currency from bonuses
-        return new Decimal(1)
-    },
-    row: 1, // Row the layer is in on the tree (0 is the first row)
-    branches: ["p"],
-    hotkeys: [
-        {key: "g", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
-    ],
-    doReset(resettingLayer) {
-        let keep = [];
-     
-       
-        if (hasMilestone("d", 0)) keep.push("milestones")
-        if (hasMilestone("bo", 0)) keep.push("milestones")
-         if (layers[resettingLayer].row > this.row) layerDataReset("ps", keep)
-    },
-    layerShown(){return player.p.unlocked},
-    
-    milestones: {
-        0: {
-            requirementDescription: "8 Power Stations",
-            done() { return player.ps.best.gte(8) },
-            effectDescription: "Keep Machintruc Upgrades on reset.",
-        },
-        1: {
-            requirementDescription: "1e10 Power Stations",
-            done() { return player.ps.best.gte(1000000000) },
-            effectDescription: "Unlock Replicants",
-        },
-        2: {
-            requirementDescription: "1e308 Power Stations",
-            done() { return player.ps.best.gte("1e308") },
-            effectDescription: "Unlock 3 more Replicanti upgrades",
-        },
-    },
-    upgrades: {
-        11: {
-            title: "Cog Generator but in Power Station",
-            description: "Every tree layer that resets Machintruc system now has 2x starting cog gain",
-            cost: new Decimal(1),
-            
-        },
-    12: {
-        title: "Upgrade Machine",
-            description: "Base level gain is powered to ^1.1",
-            cost: new Decimal(3),
-            unlocked() { return player[this.layer].unlocked },
-            effect() {
-                let eff = new Decimal(1.1);
-                if (hasUpgrade("d", 11)) eff = eff.pow(1.5);
-                if (hasUpgrade("cb", 11)) eff = eff.pow(1.5);    if (hasUpgrade("re", 11)) eff = eff.pow(1.1);
-                if (hasUpgrade("p", 31)) eff = eff.pow(1.1);
-                if (hasUpgrade("p", 34)) eff = eff.pow(1.1);
-                if (inChallenge("q", 12)) eff = eff.pow(0.001);
-                return eff;
-            },
-            effectDisplay() { return "^" + format(this.effect()) }, // Add formatting to the effect
-
-    },   
-    13: {
-        title: "Unreachable Milestones",
-        description: "Power Stations Replicanti now boosts Machintruc Upgrades by ^2.0",
-        cost: new Decimal(1e15),
-        unlocked() { return hasMilestone("ps", 1) },
-        
-    },
-    14: {
-        title: "Solarnia Combustion",
-        description: "Base level gain is powered to ^1.2",
-        cost: new Decimal(1e20),
-        unlocked() { return hasMilestone("ps", 1) },
-        effect() {
-           let eff = new Decimal(1.2);
-            if (hasUpgrade("p", 34)) eff = eff.pow(1.1);
-            if (inChallenge("q", 12)) eff = eff.pow(0.001);
-            return eff;
-        },
-        effectDisplay() { return "^" + format(this.effect()) }, // Add formatting to the effect
-    },
-}
 })
 addLayer("d", {
     name: "Data", // This is optional, only used in a few places, If absent it just uses the layer id.
@@ -454,12 +505,12 @@ addLayer("d", {
 		points: new Decimal(0),
     }},
     color: "#a0d669",
-    requires() { return new Decimal(16384).times((player.d.unlockOrder&&!player.d.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
+    requires() { return new Decimal(32768).times((player.d.unlockOrder&&!player.d.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
     resource: "data storages", // Name of prestige currency
-    baseResource: "cogs", // Name of resource prestige is based on
+    baseResource: "power stations", // Name of resource prestige is based on
     baseAmount() {return player.ps.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 0.5, // Prestige currency exponent
+    exponent: 0.25, // Prestige currency exponent
     doReset(resettingLayer) {
         let keep = [];
      
@@ -485,42 +536,88 @@ addLayer("d", {
     layerShown(){return player.g.unlocked},
     milestones: {
         0: {
-            requirementDescription: "3 Data Storages",
-            done() { return player.d.best.gte(3) },
+            requirementDescription: "1 Data Storage",
+            done() { return player.d.best.gte(1) },
             effectDescription: "Keep your all Gear upgrades but also keeps Power Supply and Gears milestone",
            
         },
         1: {
-            requirementDescription: "35 Data Storages",
-            done() { return player.d.best.gte(35) },
-            effectDescription: "Unlock the Machintruc Automator",
-            toggles: [["p", "auto"]],
+            requirementDescription: "3 Data Storages",
+            done() { return player.d.best.gte(3) },
+            effectDescription: "Keep your Machintruc upgrades on reset.",
+           
+        },
+        2: {
+            requirementDescription: "4 Data Storages",
+            done() { return player.d.best.gte(4) },
+            effectDescription: "Automatically reset for Power Stations",
+            toggles: [["ps", "auto"]],
         },
     },
     challenges: {
         11: {
             name: "Kalafior",
             challengeDescription: "Machintruc are Gear upgrades are heavily weaken.",
-            canComplete: function() {return player.points.gte(10000)},
+            canComplete: function() {return player.points.gte(50000)},
   
             goal(){
-                if (challengeCompletions(this.layer, this.id) == 0) return new Decimal(1e4);
-                if (challengeCompletions(this.layer, this.id) == 1) return new Decimal(1e6);
+                if (challengeCompletions(this.layer, this.id) == 0) return new Decimal(50000);
+                if (challengeCompletions(this.layer, this.id) == 1) return new Decimal(50000);
               
             },
             rewardDescription: "Unlock a new Gear upgrade",
         },
         12: {
             name: "Weak Key",
-            challengeDescription: "The cog gain is divided by half, but upgrades can recover back to fully but still weakened.",
+            challengeDescription: "The cog gain is divided by half, but upgrades can improve it",
             canComplete: function() {return player.points.gte(2500)},
             unlocked() { return hasChallenge("d", 11) },
             goal(){
-                if (challengeCompletions(this.layer, this.id) == 0) return new Decimal(1e4);
-                if (challengeCompletions(this.layer, this.id) == 1) return new Decimal(1e6);
+                if (challengeCompletions(this.layer, this.id) == 0) return new Decimal(2500);
+                if (challengeCompletions(this.layer, this.id) == 1) return new Decimal(2500);
+
               
             },
             rewardDescription: "You gain 1.2x more cogs.",
+        },
+        21: {
+            name: "Typical Challenge",
+            challengeDescription: "The Machintruc Upgrade 2 don't produce anything",
+            canComplete: function() {return player.points.gte(100000)},
+            unlocked() { return hasChallenge("d", 12) },
+            goal(){
+
+                if (challengeCompletions(this.layer, this.id) == 0) return new Decimal(100000);
+                if (challengeCompletions(this.layer, this.id) == 1) return new Decimal(100000);
+              
+            },
+            rewardDescription: "Machintruc Upgrade 2 is raised to the power of ^1.1",
+        },
+        22: {
+            name: "Ancient Machines",
+            challengeDescription: "Power Station base level upgrades are raised to the power of ^0.75 and Machintruc Upgrade 3 is weaken.",
+            completionLimit: 10,
+            canComplete: function() {return player.points.gte(100000)},
+            unlocked() { return hasChallenge("d", 21) },
+            goal(){
+                if (challengeCompletions(this.layer, this.id) == 0) return new Decimal(100000);
+                if (challengeCompletions(this.layer, this.id) == 1) return new Decimal(100000);
+                  
+            },
+            rewardDescription: "Power station base level upgrade is raised to the power of ^1.18",
+        },
+        31: {
+            name: "Weak Upgrades",
+            challengeDescription: "Machintruc Upgrades effect have no gain (some machintruc upgrades can have effect)",
+         
+            canComplete: function() {return player.points.gte(2.5e9)},
+            unlocked() { return hasChallenge("d", 22) },
+            goal(){
+                if (challengeCompletions(this.layer, this.id) == 0) return new Decimal(2.5e9);
+                if (challengeCompletions(this.layer, this.id) == 1) return new Decimal(2.5e9);
+                  
+            },
+            rewardDescription: "Unlock a new data storage upgrade",
         },
     },
     upgrades: {
@@ -540,6 +637,18 @@ addLayer("d", {
         description: "Upgrades from Gears are ^1.2 stronger",
         cost: new Decimal(10),
         unlocked() { return (hasUpgrade(this.layer, 12))},
+    },
+    14: {
+        title: "Known goods",
+        description: "Base level is raised to the power of ^1.3",
+        cost: new Decimal(50),
+        effect() {
+            let eff = new Decimal(1.3);
+           
+             return eff;
+         },
+         effectDisplay() { return "^" + format(this.effect()) }, // Add formatting to the effect
+        unlocked() { return (hasChallenge(this.layer, 31))},
     },}
 })
 addLayer("sm", {
@@ -551,7 +660,7 @@ addLayer("sm", {
 		points: new Decimal(0),
     }},
     color: "#524e3c",
-    requires() { return new Decimal("1e1024").times((player.sm.unlockOrder&&!player.sm.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
+    requires() { return new Decimal(1e100).times((player.sm.unlockOrder&&!player.sm.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
     resource: "super machintruc systems", // Name of prestige currency
     baseResource: "machintruc systems", // Name of resource prestige is based on
     baseAmount() {return player.p.points}, // Get the current amount of baseResource
@@ -583,7 +692,86 @@ addLayer("sm", {
                 let eff = player.points.plus(1).log10().pow(0.75).plus(1);
                 return eff;
             },
-            effectDisplay() { return format(tmp.p.upgrades[13].effect)+"x" },
+            effectDisplay() { return format(tmp.sm.upgrades[11].effect)+"x" },
+        },
+        12: {
+            title: "More Unreachable Milestones",
+            description: "Unlock a new kind of layer.",
+            cost: new Decimal(2),
+           
+        },}
+})
+addLayer("bab", {
+    name: "Babies", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "B", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 1, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: false,
+		points: new Decimal(0),
+    }},
+    color: "#00d9ff",
+    requires() { return new Decimal(1).times((player.sm.unlockOrder&&!player.sm.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
+    resource: "babies", // Name of prestige currency
+            baseResource: "super machintrucs", // Name of resource prestige is based on
+            baseAmount() {return player.sm.points},
+    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0.25, // Prestige currency exponent
+  
+    gainMult() {
+        let mult = new Decimal(1)
+   
+  
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        return new Decimal(1)
+    },
+    row: "side", // Row the layer is in on the tree (0 is the first row)
+ 
+    
+    tabFormat: {
+        "Main Tab": {
+            content: ["main-display",
+                "prestige-button",
+                "resource-display",
+                "blank",
+                ["display-text",
+				function() {return 'Babies are a type of a softcap that does not halt your cogs production'},
+					{}],
+                "upgrades",
+                "blank",
+            ],
+        },
+        Babies: {
+            
+            buttonStyle() { return {'background-color': '#00d9ff'} },
+            content: [
+                "main-display",
+                "blank",
+                "blank",
+                "blank",
+                "blank",
+                "blank",
+                "blank",
+        ]},
+    },
+    layerShown(){return (hasUpgrade("sm", 12))},
+    upgrades: {
+        11: {
+            title: "The Machine Chores",
+            description: "Cogs boost their own generation",
+            cost: new Decimal(1),
+            effect() { 
+                let eff = player.points.plus(1).log10().pow(0.75).plus(1);
+                return eff;
+            },
+            effectDisplay() { return format(tmp.sm.upgrades[11].effect)+"x" },
+        },
+        12: {
+            title: "More Unreachable Milestones",
+            description: "Unlock a new kind of layer.",
+            cost: new Decimal(2),
+           
         },}
 })
 addLayer("ch", {
@@ -627,10 +815,10 @@ addLayer("cb", {
 		points: new Decimal(0),
     }},
     color: "#9c9a97",
-    requires() { return new Decimal(15000000).times((player.d.unlockOrder&&!player.d.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
+    requires() { return new Decimal(1e10).times((player.cb.unlockOrder&&!player.cb.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
     resource: "CMOS batteries", // Name of prestige currency
-    baseResource: "cogs", // Name of resource prestige is based on
-    baseAmount() {return player.points}, // Get the current amount of baseResource
+    baseResource: "power stations", // Name of resource prestige is based on
+    baseAmount() {return player.ps.points}, // Get the current amount of baseResource
     resetsNothing() { return hasMilestone("i", 1)&&player.cb.current!="cb" },
     doReset(resettingLayer) {
         let keep = [];
@@ -640,7 +828,7 @@ addLayer("cb", {
          if (layers[resettingLayer].row > this.row) layerDataReset("cb", keep)
     },
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 0.5, // Prestige currency exponent
+    exponent: 0.3, // Prestige currency exponent
     gainMult() {
         let mult = new Decimal(1)
       
@@ -698,13 +886,36 @@ addLayer("cb", {
     buyables: {
         11: {
             title: "Long CMOS battery",
-            cost(x) { return new Decimal(1).mul(x) },
-            display() { return "Makes power stations stronger" },
-            canAfford() { return player[this.layer].points.gte(this.cost()) },
-            buy() {
-                player[this.layer].points = player[this.layer].points.sub(this.cost())
-                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
+                if (x.gte(3)) x = x.pow(2.75).div(3)
+                let cost = Decimal.pow(2, x.pow(1.5))
+                return cost.floor()
             },
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                return "Cost: " + format(data.cost) + " CMOS batteries\n\
+                Amount: " + player[this.layer].buyables[this.id] + "\n\
+                Makes CMOS Battery " + format(data.effect.first) + " times stronger and Power Stations can be increased. " + format(data.effect.second)
+            },
+            effect(x) { // Effects of owning x of the items, x is a decimal
+                let eff = {}
+                if (x.gte(0)) eff.first = Decimal.pow(25, x.pow(1.1))
+                else eff.first = Decimal.pow(1/25, x.times(-1).pow(1.1))
+            
+                if (x.gte(0)) eff.second = x.pow(0.8)
+                else eff.second = x.times(-1).pow(0.8).times(-1)
+                return eff;
+            },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() { 
+                cost = tmp[this.layer].buyables[this.id].cost
+                player[this.layer].points = player[this.layer].points.sub(cost)	
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].add(1)
+                player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
+            },
+            buyMax() {}, // You'll have to handle this yourself if you want
+            style: {'height':'222px'},
+            
            
         },
        
@@ -719,7 +930,7 @@ addLayer("mo", {
 		points: new Decimal(0),
     }},
     color: "#c0d1a5",
-    requires() { return new Decimal(1024).times((player.mo.unlockOrder&&!player.mo.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
+    requires() { return new Decimal(140).times((player.mo.unlockOrder&&!player.mo.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
     resource: "motherboard connectors", // Name of prestige currency
     baseResource: "gears", // Name of resource prestige is based on
     baseAmount() {return player.g.points}, // Get the current amount of baseResource
@@ -757,24 +968,66 @@ addLayer("mo", {
     buyables: {
         11: {
             title: "Add CPU",
-            cost(x) { return new Decimal(1).mul(x) },
-            display() { return "Adds CPU to make motherboards stronger" },
-            canAfford() { return player[this.layer].points.gte(this.cost()) },
-            buy() {
-                player[this.layer].points = player[this.layer].points.sub(this.cost())
-                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
+                if (x.gte(3)) x = x.pow(2.75).div(3)
+                let cost = Decimal.pow(2, x.pow(1.5))
+                return cost.floor()
             },
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                return "Cost: " + format(data.cost) + " motherboards\n\
+                Amount: " + player[this.layer].buyables[this.id] + "\n\
+                Makes CPU" + format(data.effect.first) + " more better and powers it's amount " + format(data.effect.second)
+            },
+            effect(x) { // Effects of owning x of the items, x is a decimal
+                let eff = {}
+                if (x.gte(0)) eff.first = Decimal.pow(25, x.pow(1.1))
+                else eff.first = Decimal.pow(1/25, x.times(-1).pow(1.1))
+            
+                if (x.gte(0)) eff.second = x.pow(0.8)
+                else eff.second = x.times(-1).pow(0.8).times(-1)
+                return eff;
+            },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() { 
+                cost = tmp[this.layer].buyables[this.id].cost
+                player[this.layer].points = player[this.layer].points.sub(cost)	
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].add(1)
+                player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
+            },
+            buyMax() {}, // You'll have to handle this yourself if you want
            
         },
         12: {
             title: "Add GPU",
-            cost(x) { return new Decimal(1).mul(x) },
-            display() { return "Adds GPU to make motherboards stronger" },
-            canAfford() { return player[this.layer].points.gte(this.cost()) },
-            buy() {
-                player[this.layer].points = player[this.layer].points.sub(this.cost())
-                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
+                if (x.gte(3)) x = x.pow(2.75).div(3)
+                let cost = Decimal.pow(2, x.pow(1.5))
+                return cost.floor()
             },
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                return "Cost: " + format(data.cost) + " motherboards\n\
+                Amount: " + player[this.layer].buyables[this.id] + "\n\
+                Makes GPU" + format(data.effect.first) + " more better and boosts it's amount " + format(data.effect.second)
+            },
+            effect(x) { // Effects of owning x of the items, x is a decimal
+                let eff = {}
+                if (x.gte(0)) eff.first = Decimal.pow(25, x.pow(1.1))
+                else eff.first = Decimal.pow(1/25, x.times(-1).pow(1.1))
+            
+                if (x.gte(0)) eff.second = x.pow(0.8)
+                else eff.second = x.times(-1).pow(0.8).times(-1)
+                return eff;
+            },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() { 
+                cost = tmp[this.layer].buyables[this.id].cost
+                player[this.layer].points = player[this.layer].points.sub(cost)	
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].add(1)
+                player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
+            },
+            buyMax() {}, // You'll have to handle this yourself if you want
            
         },
        
@@ -817,7 +1070,7 @@ addLayer("re", {
     }},
   
     color: "#f705bb",
-    requires() { return new Decimal(64).times((player.re.unlockOrder&&!player.re.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
+    requires() { return new Decimal(1e15).times((player.re.unlockOrder&&!player.re.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
     resource: "replicants", // Name of prestige currency
     baseResource: "gears", // Name of resource prestige is based on
     baseAmount() {return player.g.points}, // Get the current amount of baseResource
@@ -870,16 +1123,16 @@ addLayer("re", {
         }},
       
         color: "#ffffff",
-        requires() { return new Decimal("1e10000").times((player.i.unlockOrder&&!player.i.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
+        requires() { return new Decimal("4096").times((player.i.unlockOrder&&!player.i.unlocked)?5000:1) }, // Can be a function that takes requirement increases into account
         resource: "internet connections", // Name of prestige currency
-        baseResource: "cogs", // Name of resource prestige is based on
+        baseResource: "data storages", // Name of resource prestige is based on
         doReset(resettingLayer) {
             let keep = [];
          
             if (hasMilestone("bo", 0)) keep.push("milestones")
              if (layers[resettingLayer].row > this.row) layerDataReset("i", keep)
         },
-        baseAmount() {return player.points}, // Get the current amount of baseResource
+        baseAmount() {return player.d.points}, // Get the current amount of baseResource
         type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
         exponent: 0.5, // Prestige currency exponent
         gainMult() {
@@ -1114,7 +1367,11 @@ addLayer("re", {
                 buyables: {
                     11: {
                         title: "Add CPU",
-                        cost(x) { return new Decimal(1).mul(x) },
+                        cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
+                            if (x.gte(3)) x = x.pow(2.75).div(3)
+                            let cost = Decimal.pow(2, x.pow(1.5))
+                            return cost.floor()
+                        },
                         display() { return "Adds CPU to make motherboards stronger" },
                         canAfford() { return player[this.layer].points.gte(this.cost()) },
                         buy() {
@@ -1125,7 +1382,11 @@ addLayer("re", {
                     },
                     12: {
                         title: "Add GPU",
-                        cost(x) { return new Decimal(1).mul(x) },
+                        cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
+                            if (x.gte(3)) x = x.pow(2.75).div(3)
+                            let cost = Decimal.pow(2, x.pow(1.5))
+                            return cost.floor()
+                        },
                         display() { return "Adds GPU to make motherboards stronger" },
                         canAfford() { return player[this.layer].points.gte(this.cost()) },
                         buy() {
@@ -1321,7 +1582,7 @@ addLayer("re", {
                         },
                         buyMax() {}, // You'll have to handle this yourself if you want
                         style: {'height':'222px'},
-                        purchaseLimit: new Decimal(1024),
+                   
                         sellOne() {
                             let amount = getBuyableAmount(this.layer, this.id)
                             if (amount.lte(0)) return // Only sell one if there is at least one
@@ -1476,6 +1737,7 @@ addLayer("ab", {
 		},
     }
 })
+
 addLayer("a", {
     startData() { return {
         unlocked: true,
