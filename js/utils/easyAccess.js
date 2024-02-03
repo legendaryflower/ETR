@@ -70,6 +70,10 @@ function achievementEffect(layer, id) {
 	return (tmp[layer].achievements[id].effect)
 }
 
+
+function challengeNerf(layer, id) {
+	return (tmp[layer].challenges[id].powers)
+}
 function gridEffect(layer, id) {
 	return (gridRun(layer, 'getEffect', player[layer].grid[id], id))
 }

@@ -1,8 +1,8 @@
 let modInfo = {
-	name: "The Robot Tree",
+	name: "The Exponent Tree",
 	id: "mymod",
-	author: "Slime Adventure",
-	pointsName: "cogs",
+	author: "nobody",
+	pointsName: "points",
 	modFiles: ["layers.js", "tree.js"],
 
 	discordName: "",
@@ -13,21 +13,22 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1",
-	name: "The Robot Upgrade",
+	num: "0.0.1 Alpha",
+	name: "Alpha Release",
 }
 
-let changelog = `<h1>Changelog:</h1>
-<br>
-	<h3>v0.1</h3><br>
-		- Changed some tree layers how they work.<br>
-		- Added Supermachintruc System and Chassis`
+let changelog = `<h1>Changelog:</h1><br>
+	<h3>v0.0.1 Alpha</h3><br>
+		- Added Exponent coins and Orbs <br>
+		`
 
-let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
+let winText = `This game is currently unfinished and the endgame may change anytime soon but congrats for beating the game!`
 
 // If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
 // (The ones here are examples, all official functions are already taken care of)
-var doNotCallTheseFunctionsEveryTick = ["blowUpEverything"]
+
+var alwaysKeepTheseVariables = ["primeMiles", "auto", "autoExt", "autoBld", "autoW", "autoGhost", "autoSE", "autoNN", "keepPosNeg", "distrAll", "spellInput", "pseudoUpgs", "maxToggle"]
+var doNotCallTheseFunctionsEveryTick = ["doReset", "buy", "buyMax", "onPurchase", "blowUpEverything", "castAllSpells", "completeInBulk", "startMastery", "completeMastery"]
 
 function getStartPoints(){
     return new Decimal(modInfo.initialStartPoints)
@@ -44,22 +45,13 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(1)
-	if (hasUpgrade('p', 11)) gain = gain.times(2)
-	if (hasUpgrade('p', 12)) gain = gain.times(upgradeEffect('p', 12))
-	if (hasUpgrade('p', 21)) gain = gain.times(3)
-	if (hasAchievement("a", 13)) gain = gain.times(1.1);
-	if (hasUpgrade('g', 11)) gain = gain.times(5)
-	if (hasUpgrade('g', 12)) gain = gain.times(upgradeEffect('g', 12))
-	if (hasUpgrade('ps', 11)) gain = gain.times(2)
-	if (hasUpgrade('cb', 12)) gain = gain.times(4.5)
-	if (hasUpgrade('mo', 12)) gain = gain.times(8)
-	if (hasUpgrade('re', 12)) gain = gain.times(upgradeEffect('re', 12))
-	if (hasUpgrade('i', 12)) gain = gain.times(upgradeEffect('i', 12))
-	if (hasUpgrade('p', 33)) gain = gain.times(7.5)
-	if (hasUpgrade('g', 15)) gain = gain.times(upgradeEffect('g', 15))
-	if (hasUpgrade("p", 15)) gain = gain.times(upgradeEffect("p", 15));
-	if (inChallenge('d', 12)) gain = gain.times(0.5)
-	if (hasAchievement('a', 22)) gain = gain.times(2)
+	if (hasUpgrade("p", 11)) gain = gain.times(upgradeEffect("p", 11));
+	if (hasUpgrade("p", 12)) gain = gain.times(upgradeEffect("p", 12));
+	if (hasUpgrade('p', 14)) gain = gain.times(2.5)
+	
+	if (player.o.unlocked) gain = gain.times(tmp.o.buyables[12].effect.first);
+	if (player.o.unlocked) gain = gain.times(tmp.o.effect);
+	if (hasUpgrade("o", 14)) gain = gain.times(upgradeEffect("o", 14));
 	return gain
 }
 
@@ -68,12 +60,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [
+var displayThings = [`<span>Reach 12 orbs to beat the game!</span>`,
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(new Decimal("e280000000"))
+	return player.o.points.gte(new Decimal(12))
 }
 
 
