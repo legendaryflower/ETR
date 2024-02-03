@@ -1,7 +1,7 @@
 let modInfo = {
 	name: "The Exponent Tree",
 	id: "mymod",
-	author: "nobody",
+	author: "RTLF2024 (Remastered The Legendary Flower2024)",
 	pointsName: "points",
 	modFiles: ["layers.js", "tree.js"],
 
