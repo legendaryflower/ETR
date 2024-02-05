@@ -17,10 +17,13 @@ addLayer("p", {
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
         if (hasUpgrade("p", 43)) mult = mult.times(2000);
+        if (hasChallenge("o", 31)) mult = mult.times(60);
         return mult
     },
     directMult() {
         mult = new Decimal(1)
+        if (inChallenge("o", 21)) return new Decimal(1);
+
         if (hasUpgrade("p", 32)) mult = mult.times(1.4);
         if (hasUpgrade("p", 33)) mult = mult.times(upgradeEffect("p",33));
         if (hasUpgrade("p", 34)) mult = mult.times(upgradeEffect("p",34));
@@ -29,6 +32,10 @@ addLayer("p", {
         if (hasUpgrade("p", 42)) mult = mult.times(4);
         if (hasUpgrade("p", 51)) mult = mult.times(16);
         if (hasUpgrade("p", 52)) mult = mult.times(upgradeEffect("p",52));
+        if (inChallenge("o", 11)) mult = mult.div(player.points);
+        if (hasChallenge("o", 11)) mult = mult.times(20);
+        if (hasChallenge("o", 21)) mult = mult.pow(1.05);
+
         return mult
     },
     softcap: new Decimal(1000),
@@ -42,6 +49,9 @@ addLayer("p", {
     passiveGeneration() { return (hasUpgrade("o", 31)?0.25:hasUpgrade("p", 35)?0.025:(hasMilestone("o", 2))?0.001:0) },
     gainExp() { // Calculate the exponent on main currency from bonuses
         exp = new Decimal(1)
+
+        if (inChallenge("o", 22)) return new Decimal(1);
+
         if (player.p.unlocked) exp = exp.times(tmp.p.buyables[11].effect.first);
         if (player.o.unlocked) exp = exp.times(tmp.o.buyables[11].effect.first);
        
@@ -51,6 +61,7 @@ addLayer("p", {
         if (hasUpgrade("o", 21)) exp = exp.plus(upgradeEffect("o", 21).ex);
         if (hasUpgrade("p", 25)) exp = exp.plus(5);
         if (hasUpgrade("p", 44)) exp = exp.pow(1.05);
+        if (hasChallenge("o", 22)) exp = exp.pow(1.05);
         return exp
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
@@ -135,7 +146,7 @@ addLayer("p", {
             cost: new Decimal(1),
             effect() {
                 
-                
+                if (inChallenge("o", 12)) return new Decimal(1);
                 let eff = player.p.points.plus(2).pow(0.5);
                 if (hasUpgrade("o", 12)) eff = eff.times(3);
                 
@@ -157,9 +168,9 @@ addLayer("p", {
               },
             effect() {
                 
-                
+                if (inChallenge("o", 12)) return new Decimal(1);
                 let eff = player.points.plus(1).log10().pow(0.75).plus(1);
-    
+             
                 
                 return eff;
             },
@@ -179,7 +190,7 @@ addLayer("p", {
               },
             effect() {
                 
-                
+                if (inChallenge("o", 12)) return new Decimal(1);
                 let eff = player.points.plus(0.5).log10().pow(0.1).plus(0.25);
              
                 return eff;
@@ -190,11 +201,11 @@ addLayer("p", {
         },
         14: {
             title: "Orb Security",
-            description: "Orbs cost requirement is divided based on your Exponent coins but effect gets reduced if effect is /8.",
+            description: "Orbs cost requirement is divided based on your Exponent coins but effect gets reduced if effect is /8 but also multiply points gain by 2.5.",
             cost: new Decimal(100000),
             effect() {
                 
-                
+                if (inChallenge("o", 12)) return new Decimal(1);
                 let eff = player.p.points.plus(0.25).pow(0.25);
                 if (eff.gte(8)) eff = eff.div(100).log10().plus(8)
                 return eff;
@@ -234,7 +245,7 @@ addLayer("p", {
             title: "Anti-Dubnium Soldiers",
             description: "Make the Orb's exponent reduction at 0.2.",
             cost: new Decimal(1500000),
-            onPurchase() {player.o.dubnium = new Decimal(0.2);},
+            onPurchase() {if (!hasMilestone("o",0)) player.o.dubnium = new Decimal(0.2);},
             unlocked() { return hasUpgrade("p", 23)||player.p.points.gte(1.5e6) },
           
             
@@ -243,7 +254,7 @@ addLayer("p", {
             title: "Enforced Anti-Dubnium Soldiers",
             description: "Make the Orb's exponent reduction at 0.5.",
             cost: new Decimal(500000),
-            onPurchase() {player.o.dubnium = new Decimal(0.5);},
+            onPurchase() {if (!hasMilestone("o",0)) player.o.dubnium = new Decimal(0.5);},
             unlocked() { return hasUpgrade("p", 23) },
           
             
@@ -447,6 +458,62 @@ addLayer("p", {
           
             
         },
+        61: {
+            title: "Cookies Are Overrated",
+            description: "Multiply Cookies' exponent based on your unfed Cookies.",
+            cost: new Decimal(1e17),
+            effect() {
+                
+                
+                let eff = player.w.points.plus(1).pow(0.75);
+              
+                return eff;
+            },
+      
+            effectDisplay() { return format(tmp.p.upgrades[61].effect)+"x" },
+          
+            unlocked() { return player.w.unlocked },
+          
+            
+        },
+        62: {
+            title: "Cookie Feasting",
+            description: "You can convert fed cookies back to unfed and fed cookies multiply Points gain.",
+            cost: new Decimal(1.5e17),
+            effect() {
+                
+                
+                let eff = player.w.cookiesFed.plus(1).pow(0.5);
+              
+                return eff;
+            },
+      
+            effectDisplay() { return format(tmp.p.upgrades[62].effect)+"x" },
+          
+            unlocked() { return hasUpgrade("p",61) },
+          
+            
+        },
+        63: {
+            title: "Cookie Monster",
+            description: "Gaining cookies via reset doesn't reset Exponent upgrades.",
+            cost: new Decimal(2e17),
+           
+          
+            unlocked() { return hasUpgrade("p",62) },
+          
+            
+        },
+        64: {
+            title: "Cookie Clicker Reference",
+            description: "You now gain 1% of Cookies per second.",
+            cost: new Decimal(3e17),
+           
+          
+            unlocked() { return hasUpgrade("p",63) },
+          
+            
+        },
     }
 
 })
@@ -551,7 +618,7 @@ addLayer("o", {
         "Milestones": {
      
             content: ["milestones", ["display-text",
-            function() {return 'NOTE: Next milestone would be unlocked when a previous milestone is unlocked'},
+            function() {return 'NOTE: Next milestone would be unlocked when a previous milestone is unlocked, This may not be true for some milestones that are unlocked when doing certain actions, like buying upgrades or completing any challenge.'},
                 {}],
 ,
             "blank", ["blank" ],
@@ -561,8 +628,11 @@ addLayer("o", {
         ]},
         "Orbics": {
             unlocked() {return hasMilestone("o", 5)},
-            content: ["challenges", ["display-text",
-            function() {return 'Orbics is currently unfinished.'},
+            content: ["challenges", 
+            "blank",
+            "blank",
+            ["display-text",
+            function() {return 'Complete all Orbics to make Willy layer show.'},
                 {}],
 ,
             "blank", ["blank" ],
@@ -665,16 +735,115 @@ addLayer("o", {
     challenges: {
         11: {
             name: "Hafnium",
-            challengeDescription: "All production is halven.",
+            challengeDescription: "Exponent coins's direct multipler will be divided based on your Points.",
           goal(){
-           return new Decimal(1e12);
+           return new Decimal(1e8);
                 
               
             },
-            rewardDescription: "Unfinished",
+            onEnter() {
+player.points = new Decimal(0),
+player.p.points = new Decimal(0),
+player.p.best = new Decimal(0),
+player.p.total = new Decimal(0),
+player.p.upgrades = []
+            },
+            rewardDescription: "Direct multiplers for Exponent coins is multipled by 20.",
             
         },
+        12: {
+            name: "Zirconium",
+            challengeDescription: "The first 4 Exponent Coins upgrades's effect are always at 1, Orbs divide Points production.",
+          goal(){
+           return new Decimal(1e6);
+                
+              
+            },
+            onEnter() {
+player.points = new Decimal(0),
+player.p.points = new Decimal(0),
+player.p.best = new Decimal(0),
+player.p.total = new Decimal(0),
+player.p.upgrades = []
+            },
+            rewardDescription: "Unlock more Orbs upgrades.",
+           unlocked() {return hasChallenge("o",11)} 
+        },
+        21: {
+            name: "Rhenium",
+            challengeDescription: "The direct multipler for Exponent Coins is always at 1.",
+          goal(){
+           return new Decimal(1e11);
+                
+              
+            },
+            onEnter() {
+player.points = new Decimal(0),
+player.p.points = new Decimal(0),
+player.p.best = new Decimal(0),
+player.p.total = new Decimal(0),
+player.p.upgrades = []
+            },
+            rewardDescription: "Raise the exponent's coin direct multipler to 1.05.",
+           unlocked() {return hasUpgrade("o",32)} 
+        },
+        22: {
+            name: "Gadolinium",
+            challengeDescription: "The exponent multipler for Exponent Coins is always at 1.",
+          goal(){
+           return new Decimal(1e13);
         
+              
+            },
+            onEnter() {
+player.points = new Decimal(0),
+player.p.points = new Decimal(0),
+player.p.best = new Decimal(0),
+player.p.total = new Decimal(0),
+player.p.upgrades = []
+            },
+            rewardDescription: "Raise the exponent's coin exponent to 1.05.",
+           unlocked() {return hasChallenge("o",21)} 
+        },
+
+        31: {
+            name: "Molybdenum",
+            challengeDescription: "The first 2 challenges are applied to once.",
+          goal(){
+           return new Decimal(500000);
+        
+              
+            },
+            onEnter() {
+player.points = new Decimal(0),
+player.p.points = new Decimal(0),
+player.p.best = new Decimal(0),
+player.p.total = new Decimal(0),
+player.p.upgrades = []
+            },
+            rewardDescription: "The gain for Exponent coins is boosted a little bit.",
+           unlocked() {return hasChallenge("o",22)},
+           countsAs: [11,12] 
+        },
+        32: {
+            name: "Lawrencium",
+            challengeDescription: "All challenges are applied to once except for Molybdenum",
+          goal(){
+           return new Decimal(500000);
+        
+              
+            },
+            onEnter() {
+player.points = new Decimal(0),
+player.p.points = new Decimal(0),
+player.p.best = new Decimal(0),
+player.p.total = new Decimal(0),
+player.p.upgrades = []
+            },
+            rewardDescription: "Raise the points generation by 1.08.",
+           unlocked() {return hasChallenge("o",31)},
+           countsAs: [11,12,21,22] 
+        },
     },
     milestones: {
          
@@ -716,6 +885,7 @@ unlocked() {return hasUpgrade("o", 31)},
 
 
 },
+
     },
     upgrades: {
 			
@@ -797,6 +967,139 @@ unlocked() {return hasUpgrade("o", 31)},
         
             unlocked() { return hasUpgrade("o", 24) },
         },
+        32: {
+            title: "Arsenal Orbs",
+            description: "Triple the point gain and unlock Rhenium.",
+            cost: new Decimal(28),
+        
+            unlocked() { return hasChallenge("o", 12) },
+        },
+        33: {
+            title: "Hassled Orbs",
+            description: "Weaken the Hassium penalty.",
+            cost: new Decimal(32),
+            onPurchase() {player.o.hassium = new Decimal(0.75);},
+            unlocked() { return hasUpgrade("o", 32) },
+        },
     }
+
+})
+addLayer("w", {
+    name: "willy", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "W", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: false,
+		points: new Decimal(0),
+       best: new Decimal(0),
+       total: new Decimal(0),
+       cookiesFed: new Decimal(0),
+    }},
+    tooltip() { // Optional, tooltip displays when the layer is locked
+        return ("Willy")
+    },
+    color: "yellow",
+    requires: new Decimal(1e19), // Can be a function that takes requirement increases into account
+    resource: "cookies", // Name of prestige currency
+    baseResource: "points", // Name of resource prestige is based on
+    baseAmount() {return player.points}, // Get the current amount of baseResource
+    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0.25, // Prestige currency exponent
+    tooltipLocked() { // Optional, tooltip displays when the layer is locked
+        return ("???")
+    },
+    gainMult() { // Calculate the multiplier for main currency from bonuses
+        mult = new Decimal(1)
+      
+        return mult
+    },
+    passiveGeneration() { return (hasUpgrade("p", 64))?0.05:0 },
+    prestigeButtonText() { //Is secretly HTML
+      
+       return "Reset points, Exponent Coins points and upgrades for " + formatWhole(tmp[this.layer].resetGain) + " cookies. <br><br> Next cookies you'll get is for " + formatWhole(tmp[this.layer].nextAtDisp) + " points"
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        exp = new Decimal(1)
+        if (hasUpgrade("p", 61)) exp = exp.times(upgradeEffect("p",61));
+        return exp
+    },
+  
+    row: "side", // Row the layer is in on the tree (0 is the first row)
+    hotkeys: [
+        {key: "c", description: "C: Reset for cookies", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    onPrestige() {
+        player.points = new Decimal(0),
+        player.p.points = new Decimal(0),
+        player.p.best = new Decimal(0),
+        player.p.total = new Decimal(0);
+
+      	if (!hasUpgrade("p", 63))  player.p.upgrades = [];
+                    },
+    tabFormat: ["main-display",
+    "prestige-button",
+    "blank",
+    ['display-image', 'images/Willy.PNG'],
+    "blank",
+    ["display-text",
+    function() {return 'This is Willy and he likes cookies, Feed him with cookies!'},
+        {}],
+   
+    "blank",
+    "blank",
+    ["display-text",
+    function() {return 'You have '+formatWhole(player.w.points)+' unfed cookies.'},
+        {}],
+    "blank",
+    ["display-text",
+    function() {return 'You have '+formatWhole(player.w.cookiesFed)+' fed cookies.'},
+        {}],
+    "blank",
+    "blank",
+    "clickables"
+],
+    
+    
+  
+    layerShown(){return hasChallenge("o",32)},
+    clickables: {
+      
+        11: {
+            title: "Feed Willy with 1 cookie",
+            display() { return "Req: 1 cookie"},
+            unlocked() { return player.w.unlocked },
+            canClick() { return player.w.unlocked && player.w.points.gt(0) },
+            onClick() { 
+                player.w.cookiesFed = player.w.cookiesFed.plus(1);
+                player.w.points = player.w.points.minus(1);
+            },
+            style: {width: "160px", height: "160px",background:"yellow",},
+        },
+        12: {
+            title: "Feed Willy with all of your cookies",
+            display() { return "Req: 1 cookie"},
+            unlocked() { return player.w.unlocked },
+            canClick() { return player.w.unlocked && player.w.points.gt(0) },
+            onClick() { 
+                player.w.cookiesFed = player.w.cookiesFed.plus(player.w.points);
+                player.w.points = player.w.points.minus(player.w.points);
+            },
+            style: {width: "160px", height: "160px",background:"yellow",},
+        },
+        31: {
+            title: "Convert fed cookies into unfed cookies",
+            display() { return "Req: 1 fed cookie"},
+            unlocked() { return hasUpgrade("p",62) },
+            canClick() { return player.w.unlocked && player.w.cookiesFed.gt(0) },
+            onClick() { 
+                if (!confirm("Are you sure want to do this? Willy will be upset.")) return;
+                player.w.points = player.w.points.plus(player.w.cookiesFed);
+                player.w.cookiesFed = player.w.cookiesFed.minus(player.w.cookiesFed);
+            },
+            style: {width: "120px", height: "120px",background:"red",},
+        }
+    
+    },
+   
 
 })
