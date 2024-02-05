@@ -13,12 +13,19 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0.2 Alpha",
+	num: "0.0.3 Alpha",
 	name: "Alpha Release",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <b><font color="red">NOTE: Spoilers alert!</font></b>
+<br>
+<br>
+<h3>v0.0.3 Alpha</h3><br>
+- Added <b>Willy</b> layer, huh don't ask me ☺ <br>
+- Hafnium orbic is finished and added Zirconium, Rhenium and more. <br>
+- Hassium now slows your Orb gain when you reach 31 of them. <br>
+- More content is added.
 <br>
 <br>
 <h3>v0.0.2 Alpha</h3><br>
@@ -62,6 +69,9 @@ function getPointGen() {
 	if (player.o.unlocked) gain = gain.times(tmp.o.effect);
 	if (hasUpgrade("o", 14)) gain = gain.times(upgradeEffect("o", 14));
 	if (hasUpgrade('p', 45)) gain = gain.pow(1.05)
+	if (inChallenge("o", 12)) gain = gain.div(player.o.points);
+	if (hasUpgrade('o', 32)) gain = gain.times(3)
+	if (hasChallenge('o', 32)) gain = gain.pow(1.08)
 	return gain
 }
 
@@ -70,12 +80,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Reach 24 orbs to beat the game!</span>`,
+var displayThings = [`<span>Reach 1,000 cookies to beat the game!</span>`,
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.o.points.gte(new Decimal("24"))
+	return player.w.points.gte(new Decimal("1000"))
 }
 
 
