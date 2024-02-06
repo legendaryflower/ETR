@@ -62,6 +62,7 @@ addLayer("p", {
         if (hasUpgrade("p", 25)) exp = exp.plus(5);
         if (hasUpgrade("p", 44)) exp = exp.pow(1.05);
         if (hasChallenge("o", 22)) exp = exp.pow(1.05);
+    	if (inChallenge("o", 41)) exp = exp.div(player.w.points);
         return exp
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
@@ -192,7 +193,7 @@ addLayer("p", {
                 
                 if (inChallenge("o", 12)) return new Decimal(1);
                 let eff = player.points.plus(0.5).log10().pow(0.1).plus(0.25);
-             
+
                 return eff;
             },
             unlocked() { return hasUpgrade("p", 12) },
@@ -207,6 +208,7 @@ addLayer("p", {
                 
                 if (inChallenge("o", 12)) return new Decimal(1);
                 let eff = player.p.points.plus(0.25).pow(0.25);
+                if(hasUpgrade("p",65)) eff = eff.times(1.2);
                 if (eff.gte(8)) eff = eff.div(100).log10().plus(8)
                 return eff;
             },
@@ -217,8 +219,14 @@ addLayer("p", {
         15: {
             title: "Exponential Function",
             description: "Exponent coin's exponent is added by +2.",
-            cost: new Decimal(200000),
-           
+          
+            cost(){
+                if(hasUpgrade("po",11)){
+                return new Decimal(0)
+            
+                }
+                else return new Decimal(200000)
+              },
             unlocked() { return hasMilestone("o", 1) },
           
             
@@ -244,7 +252,14 @@ addLayer("p", {
         23: {
             title: "Anti-Dubnium Soldiers",
             description: "Make the Orb's exponent reduction at 0.2.",
-            cost: new Decimal(1500000),
+         
+            cost(){
+                if(hasUpgrade("po",11)){
+                return new Decimal(0)
+            
+                }
+                else return new Decimal(1500000)
+              },
             onPurchase() {if (!hasMilestone("o",0)) player.o.dubnium = new Decimal(0.2);},
             unlocked() { return hasUpgrade("p", 23)||player.p.points.gte(1.5e6) },
           
@@ -280,8 +295,14 @@ addLayer("p", {
         32: {
             title: "Very Softcap",
             description: "After the Exponent coin's softcap, the direct multipler is boosted a little.",
-            cost: new Decimal(5000000),
-
+      
+            cost(){
+                if(hasUpgrade("po",11)){
+                return new Decimal(0)
+            
+                }
+                else return new Decimal(5000000)
+              },
             unlocked() { return hasUpgrade("p", 31) },
           
             
@@ -460,12 +481,12 @@ addLayer("p", {
         },
         61: {
             title: "Cookies Are Overrated",
-            description: "Multiply Cookies' exponent based on your unfed Cookies.",
+            description: "Multiply Cookies' gain based on your unfed Cookies.",
             cost: new Decimal(1e17),
             effect() {
                 
                 
-                let eff = player.w.points.plus(1).pow(0.75);
+                let eff = player.w.points.plus(1).pow(0.2);
               
                 return eff;
             },
@@ -511,6 +532,42 @@ addLayer("p", {
            
           
             unlocked() { return hasUpgrade("p",63) },
+          
+            
+        },
+        65: {
+            title: "Willier",
+            description: "Exponent Upgrade 14 is boosted a little bit.",
+            cost: new Decimal(7.5e18),
+           
+          
+            unlocked() { return hasUpgrade("p",64) },
+          
+            
+        },
+        71: {
+            title: "Williest",
+            description: "Cookies boost their own gain",
+            cost: new Decimal(1e19),
+            effect() {
+                
+
+                let eff = player.w.points.plus(1).pow(0.1);
+          
+                
+                return eff;
+            },
+            effectDisplay() { return format(tmp.p.upgrades[71].effect)+"x" },
+            unlocked() { return hasUpgrade("p",65) },
+          
+            
+        },
+        72: {
+            title: "Wasted His Time",
+            description: "Unlock a new Orbic.",
+            cost: new Decimal(5e20),
+           
+            unlocked() { return hasUpgrade("p",71) },
           
             
         },
@@ -565,7 +622,7 @@ addLayer("o", {
   
     row: 1, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
-        {key: "p", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {key: "o", description: "O: Reset for orbs", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     canBuyMax() { return hasMilestone("o", 2) },
     resetsNothing() { return hasMilestone("o", 3) },
@@ -632,7 +689,7 @@ addLayer("o", {
             "blank",
             "blank",
             ["display-text",
-            function() {return 'Complete all Orbics to make Willy layer show.'},
+            function() {return 'Complete the first 6 Orbics to make Willy layer show.'},
                 {}],
 ,
             "blank", ["blank" ],
@@ -844,6 +901,26 @@ player.p.upgrades = []
            unlocked() {return hasChallenge("o",31)},
            countsAs: [11,12,21,22] 
         },
+        41: {
+            name: "Seaborgium",
+            challengeDescription: "Cookies divide points and exponent coins gain.",
+          goal(){
+           return new Decimal(1e8);
+        
+              
+            },
+            onEnter() {
+player.points = new Decimal(0),
+player.p.points = new Decimal(0),
+player.p.best = new Decimal(0),
+player.p.total = new Decimal(0),
+player.p.upgrades = [72]
+
+            },
+            rewardDescription: "Unlock a new layer.",
+           unlocked() {return hasUpgrade("p",72)},
+          
+        },
     },
     milestones: {
          
@@ -1010,7 +1087,8 @@ addLayer("w", {
     },
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
-      
+        if (hasUpgrade("p", 61)) mult = mult.times(upgradeEffect("p",61));
+        if (hasUpgrade("p", 71)) mult = mult.times(upgradeEffect("p",71));
         return mult
     },
     passiveGeneration() { return (hasUpgrade("p", 64))?0.05:0 },
@@ -1020,7 +1098,7 @@ addLayer("w", {
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
         exp = new Decimal(1)
-        if (hasUpgrade("p", 61)) exp = exp.times(upgradeEffect("p",61));
+
         return exp
     },
   
@@ -1102,4 +1180,85 @@ addLayer("w", {
     },
    
 
+})
+addLayer("po", {
+    name: "poacher", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "P", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: false,
+		points: new Decimal(0),
+       best: new Decimal(0),
+       total: new Decimal(0),
+      
+    }},
+  
+    color: "cyan",
+    requires: new Decimal(2.75e18), // Can be a function that takes requirement increases into account
+    resource: "poachers", // Name of prestige currency
+    baseResource: "exponent coins", // Name of resource prestige is based on
+    baseAmount() {return player.p.points}, // Get the current amount of baseResource
+    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0.25, // Prestige currency exponent
+branches: ["p"],
+    gainMult() { // Calculate the multiplier for main currency from bonuses
+        mult = new Decimal(1)
+       
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        exp = new Decimal(1)
+       
+        return exp
+    },
+    prestigeButtonText() { //Is secretly HTML
+      
+        return "Reset all previous progress for " + formatWhole(tmp[this.layer].resetGain) + " poachers. <br><br> Next poachers you'll get is for " + formatWhole(tmp[this.layer].nextAtDisp) + " exponent coins."
+     },
+    row: 1, // Row the layer is in on the tree (0 is the first row)
+    hotkeys: [
+        {key: "shift+p", description: "Shift+P: Reset for poachers", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+ 
+    layerShown(){return hasChallenge("o",41)},
+    onPrestige() {
+        player.points = new Decimal(0),
+        player.p.points = new Decimal(0),
+        player.p.best = new Decimal(0),
+        player.p.total = new Decimal(0);
+        player.o.points = new Decimal(0),
+        player.w.points = new Decimal(0),
+        player.w.cookiesFed = new Decimal(0),
+        player.o.best = new Decimal(0),
+        player.o.milestones = [],
+
+        player.o.total = new Decimal(0);
+   player.p.upgrades = [];
+   player.o.upgrades = [];
+                    },
+
+                    milestones: {
+         
+                        0: {requirementDescription: "5 Poachers",
+                        done() {return player[this.layer].best.gte(5)}, // Used to determine when to give the milestone
+                        effectDescription: "Keep Exponent and Orbs upgrades.",
+                    },
+                 
+                
+                
+                },
+                upgrades: {
+			
+			
+                    11: {
+                        title: "Poached Eggs",
+                        description: "Some exponent upgrades cost free.",
+                        cost: new Decimal(1),
+                      
+                        unlocked() {return player.po.unlocked},
+                    
+                        
+                    },
+                    
+                }
 })
