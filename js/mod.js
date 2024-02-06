@@ -13,13 +13,20 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0.3 Alpha",
+	num: "0.0.4 Alpha",
 	name: "Alpha Release",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <b><font color="red">NOTE: Spoilers alert!</font></b>
 <br>
+<br>
+<h3>v0.0.4 Alpha</h3><br>
+- Patched a bug where you get more than 1F100 cookies in Exponent Upgrade 61, the effect was nerfed and only made to multiply its gain.<br>
+- Added a new Orbic. <br>
+- More content is added. <br>
+- Fixing bugs that caused the production to produce more than 1F100 resources.
+ <br>
 <br>
 <h3>v0.0.3 Alpha</h3><br>
 - Added <b>Willy</b> layer, huh don't ask me ☺ <br>
@@ -72,6 +79,7 @@ function getPointGen() {
 	if (inChallenge("o", 12)) gain = gain.div(player.o.points);
 	if (hasUpgrade('o', 32)) gain = gain.times(3)
 	if (hasChallenge('o', 32)) gain = gain.pow(1.08)
+	if (inChallenge("o", 41)) gain = gain.div(player.w.points);
 	return gain
 }
 
@@ -80,12 +88,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Reach 1,000 cookies to beat the game!</span>`,
+var displayThings = [`<span>Reach 1 poacher to beat the game!</span>`,
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.w.points.gte(new Decimal("1000"))
+	return player.po.points.gte(new Decimal("1"))
 }
 
 
