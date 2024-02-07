@@ -13,7 +13,7 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0.4 Alpha",
+	num: "0.0.4.1 Alpha",
 	name: "Alpha Release",
 }
 
@@ -22,6 +22,10 @@ let changelog = `<h1>Changelog:</h1><br>
 <br>
 <br>
 <h3>v0.0.4 Alpha</h3><br>
+
+<h4>v0.0.4.1 Alpha</h4><br>
+- You can now report bugs with a new layer.<br><br>
+<h4>v0.0.4.0 Alpha</h4><br>
 - Patched a bug where you get more than 1F100 cookies in Exponent Upgrade 61, the effect was nerfed and only made to multiply its gain.<br>
 - Added a new Orbic. <br>
 - More content is added. <br>
