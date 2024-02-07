@@ -1181,6 +1181,55 @@ addLayer("w", {
    
 
 })
+addLayer("rb", {
+    name: "report bugs", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "🐞", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 2, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+	
+    
+    }},
+    tooltip() { // Optional, tooltip displays when the layer is locked
+        return ("Report Bugs")
+    },
+    color: "red",
+    
+    resource: "cookies", // Name of prestige currency
+  
+
+   
+  
+    row: "side", // Row the layer is in on the tree (0 is the first row)
+   
+
+    tabFormat: [
+    "blank",
+ "blank",
+    ["display-text",
+    function() {return 'Found any bugs that caused the game to break? Report <a href="https://forms.gle/FKY7BffyKSsPErDy5">here</a>!'},
+        {}],
+   
+    "blank",
+    "blank",
+    ["display-text",
+    function() {return 'Do not report any bugs that you did not found any bugs..'},
+        {}],
+    "blank",
+
+    "blank",
+    "blank",
+    "clickables"
+],
+    
+    
+  
+    layerShown(){return true},
+
+      
+   
+
+})
 addLayer("po", {
     name: "poacher", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "P", // This appears on the layer's node. Default is the id with the first letter capitalized
