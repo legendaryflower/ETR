@@ -13,12 +13,22 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0.4.1 Alpha",
+	num: "0.0.5 Alpha",
 	name: "Alpha Release",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <b><font color="red">NOTE: Spoilers alert!</font></b>
+<br>
+<br>
+<h3>v0.0.5 Alpha</h3><br>
+- More <b>Poachers</b> content is added.<br>
+- Added <b>Smash Rhenium</b> <br>
+- Fixed a bug where pressing a key doesn't reset any layer and give the currency.<br>
+- Changing stuff. <br>
+- Forgot to make orbs buy max in its 4th milestone instead of 3rd milestone, Requested by M_U_G_E_N. <br>
+- Added a lore for Rhenium herself, try unlocking Smash Rhenium and getting it in. <br>
+- There might be bugs that may seriously damage the game, If you found any, message me in Forums or report a bug in the Google Forms.
 <br>
 <br>
 <h3>v0.0.4 Alpha</h3><br>
@@ -84,6 +94,14 @@ function getPointGen() {
 	if (hasUpgrade('o', 32)) gain = gain.times(3)
 	if (hasChallenge('o', 32)) gain = gain.pow(1.08)
 	if (inChallenge("o", 41)) gain = gain.div(player.w.points);
+	if (hasUpgrade('po', 13)) gain = gain.pow(1.06)
+	if (hasUpgrade("p", 62)) gain = gain.times(upgradeEffect("p", 62));
+	if (inChallenge("po", 11)) return new Decimal(1);
+	if (hasChallenge('po', 11)) gain = gain.pow(1.07)
+	if (inChallenge("po", 12)) gain = gain.div(player.p.points);
+	if (hasUpgrade('po', 31)) gain = gain.times(2)
+	if (hasUpgrade('po', 34)) gain = gain.times(4)
+	if (inChallenge("po", 21)) gain = gain.tetrate(0.001)
 	return gain
 }
 
@@ -92,12 +110,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Reach 1 poacher to beat the game!</span>`,
+var displayThings = [`<span>Reach 2,500,000 <b>Reincarnated Poachers</b> to beat the game!</span>`,
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.po.points.gte(new Decimal("1"))
+	return player.po.reincarnations.gte(new Decimal(2.5e6))
 }
 
 
