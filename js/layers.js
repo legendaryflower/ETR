@@ -35,7 +35,7 @@ addLayer("p", {
         if (inChallenge("o", 11)) mult = mult.div(player.points);
         if (hasChallenge("o", 11)) mult = mult.times(20);
         if (hasChallenge("o", 21)) mult = mult.pow(1.05);
-
+        if (inChallenge("po", 21)) mult = mult.div(10000);
         return mult
     },
     softcap: new Decimal(1000),
@@ -44,7 +44,9 @@ addLayer("p", {
         if (player.p.auto1) {
           setBuyableAmount("p",11,tmp.p.buyables[11].canAfford?player.p.points.div(10).log(6).floor().add(1):getBuyableAmount("p",11))
         }
-       
+        if (player.p.auto2) {
+            setBuyableAmount("p",12,tmp.p.buyables[12].canAfford?player.p.points.div(1).log(275).floor().add(1):getBuyableAmount("p",12))
+          }
       },
     passiveGeneration() { return (hasUpgrade("o", 31)?0.25:hasUpgrade("p", 35)?0.025:(hasMilestone("o", 2))?0.001:0) },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -62,12 +64,18 @@ addLayer("p", {
         if (hasUpgrade("p", 25)) exp = exp.plus(5);
         if (hasUpgrade("p", 44)) exp = exp.pow(1.05);
         if (hasChallenge("o", 22)) exp = exp.pow(1.05);
+
     	if (inChallenge("o", 41)) exp = exp.div(player.w.points);
         return exp
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
-        {key: "X", description: "X: Reset for exponent coins", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {
+            key:"x", description: "X: Reset for exponent coins", onPress() {
+                if (canReset(this.layer))
+                    doReset(this.layer)
+            }
+        },
     ],
    /* passiveGeneration() { return (hasMilestone("po", 0))}, */
     doReset(resettingLayer) {
@@ -106,11 +114,7 @@ addLayer("p", {
            
         },
         12: {
-            cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
-                if (x.gte(6)) x = x.pow(2).div(2)
-                let cost = Decimal.pow(2, x.pow(2.5))
-                return cost.floor()
-            },
+            cost(x) { return new Decimal(1).mul(new Decimal(275).pow(x)) },
             title() { return "Orb Slasher" },
   
             display() { // Everything else displayed in the buyable button after the title
@@ -171,7 +175,8 @@ addLayer("p", {
                 
                 if (inChallenge("o", 12)) return new Decimal(1);
                 let eff = player.points.plus(1).log10().pow(0.75).plus(1);
-             
+                             
+                if (inChallenge("po", 12)) return new Decimal(1);
                 
                 return eff;
             },
@@ -505,7 +510,7 @@ addLayer("p", {
                 
                 
                 let eff = player.w.cookiesFed.plus(1).pow(0.5);
-              
+                if (inChallenge("po", 12)) return new Decimal(1);
                 return eff;
             },
       
@@ -605,6 +610,7 @@ addLayer("o", {
         if(hasUpgrade("p",14)) mult = mult.div(upgradeEffect("p",14));
         if(hasUpgrade("o",13)) mult = mult.div(2);
         if(hasUpgrade("p",21)) mult = mult.div(3);
+        if(inChallenge("po",21)) return new Decimal(0);
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -622,10 +628,15 @@ addLayer("o", {
   
     row: 1, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
-        {key: "o", description: "O: Reset for orbs", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {
+            key:"o", description: "O: Reset for orbs", onPress() {
+                if (canReset(this.layer))
+                    doReset(this.layer)
+            }
+        },
     ],
-    canBuyMax() { return hasMilestone("o", 2) },
-    resetsNothing() { return hasMilestone("o", 3) },
+    canBuyMax() { return hasMilestone("o", 3) },
+    resetsNothing() { return hasUpgrade("o",22) },
     effectDescription() {
         return "which are boosting Points gain by "+format(tmp.o.effect)+"x."
     },
@@ -642,7 +653,7 @@ addLayer("o", {
         base = base.plus(tmp.o.addToBase);
         
         // MULTIPLY
-      
+        if (inChallenge("po", 12)) base = base.div(1000)
         
         return base.pow(tmp.o.power);
     },
@@ -999,6 +1010,7 @@ unlocked() {return hasUpgrade("o", 31)},
                 
                 let eff = player.o.points.plus(0.6).pow(0.5);
                 if (hasUpgrade("o", 23)) eff = eff.times(2.5);
+                if (inChallenge("po", 12)) return new Decimal(1);
                 return eff;
             },
  
@@ -1063,7 +1075,7 @@ unlocked() {return hasUpgrade("o", 31)},
 })
 addLayer("w", {
     name: "willy", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "W", // This appears on the layer's node. Default is the id with the first letter capitalized
+    symbol: "🍪", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: false,
@@ -1071,6 +1083,9 @@ addLayer("w", {
        best: new Decimal(0),
        total: new Decimal(0),
        cookiesFed: new Decimal(0),
+       carsons: new Decimal(0),
+ 
+       copCodes: new Decimal(0),
     }},
     tooltip() { // Optional, tooltip displays when the layer is locked
         return ("Willy")
@@ -1104,7 +1119,12 @@ addLayer("w", {
   
     row: "side", // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
-        {key: "c", description: "C: Reset for cookies", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {
+            key:"c", description: "C: Reset for cookies", onPress() {
+                if (canReset(this.layer))
+                    doReset(this.layer)
+            }
+        },
     ],
     onPrestige() {
         player.points = new Decimal(0),
@@ -1114,28 +1134,59 @@ addLayer("w", {
 
       	if (!hasUpgrade("p", 63))  player.p.upgrades = [];
                     },
-    tabFormat: ["main-display",
-    "prestige-button",
-    "blank",
-    ['display-image', 'images/Willy.PNG'],
-    "blank",
-    ["display-text",
-    function() {return 'This is Willy and he likes cookies, Feed him with cookies!'},
-        {}],
-   
-    "blank",
-    "blank",
-    ["display-text",
-    function() {return 'You have '+formatWhole(player.w.points)+' unfed cookies.'},
-        {}],
-    "blank",
-    ["display-text",
-    function() {return 'You have '+formatWhole(player.w.cookiesFed)+' fed cookies.'},
-        {}],
-    "blank",
-    "blank",
-    "clickables"
-],
+    tabFormat: {       
+       
+    "Willy": {
+        buttonStyle() { return {'background-color': 'yellow'} },
+        content: ["main-display",
+        "prestige-button",
+        "blank",
+        ['display-image', 'images/Willy.PNG'],
+        "blank",
+        ["display-text",
+        function() {return 'This is Willy and he likes cookies, Feed him with cookies!'},
+            {}],
+       
+        "blank",
+        "blank",
+        ["display-text",
+        function() {return 'You have '+formatWhole(player.w.points)+' unfed cookies.'},
+            {}],
+        "blank",
+        ["display-text",
+        function() {return 'You have '+formatWhole(player.w.cookiesFed)+' fed cookies.'},
+            {}],
+        "blank",
+        "blank",
+        "clickables",
+    ]},
+    "Carson": {
+        unlocked() {return hasUpgrade("po",15)},
+
+        content: ["main-display",
+        "prestige-button",
+        "blank",
+        "blank",
+        ["display-text",
+        function() {return 'You have '+formatWhole(player.w.carsons)+' Carson Cookies.'},
+            {}],
+        "blank",
+        "blank",
+        ["display-text",
+        function() {return 'You have '+formatWhole(player.w.copCodes)+' Cop Cookies.'},
+            {}],
+        "blank",
+      
+        "blank",
+        "blank",
+        ['display-image', 'images/Cop needs cookies.PNG'],
+        ["display-text",
+        function() {return 'This is a cop.'},
+            {}],
+       
+    ]},
+},
+
     
     
   
@@ -1175,6 +1226,19 @@ addLayer("w", {
                 player.w.cookiesFed = player.w.cookiesFed.minus(player.w.cookiesFed);
             },
             style: {width: "120px", height: "120px",background:"red",},
+        },
+        32: {
+            title: "Sacrifice all of your cookies to get 1 Carson cookies.",
+            display() { return "Req: 1 fed cookie"},
+            unlocked() { return hasUpgrade("po",15) },
+            canClick() { return player.w.unlocked && player.w.cookiesFed.gt(0) },
+            onClick() { 
+                if (!confirm("Are you sure want to do this?")) return;
+                player.w.carsons = player.w.carsons.plus(player.w.cookiesFed);
+                player.w.cookiesFed = player.w.cookiesFed.minus(player.w.cookiesFed);
+                player.w.cookiesFedSquared = player.w.cookiesFedSquared.plus(1);
+            },
+            style: {width: "120px", height: "120px",background:"orange",},
         }
     
     },
@@ -1203,31 +1267,105 @@ addLayer("rb", {
     row: "side", // Row the layer is in on the tree (0 is the first row)
    
 
-    tabFormat: [
-    "blank",
- "blank",
-    ["display-text",
-    function() {return 'Found any bugs that caused the game to break? Report <a href="https://forms.gle/FKY7BffyKSsPErDy5">here</a>!'},
-        {}],
-   
-    "blank",
-    "blank",
-    ["display-text",
-    function() {return 'Do not report any bugs that you did not found any bugs..'},
-        {}],
-    "blank",
 
-    "blank",
-    "blank",
-    "clickables"
-],
     
-    
+tabFormat: {
+    "Report Bug": {
+       
+        content: ["blank",
+        "blank",
+           ["display-text",
+           function() {return 'Found any bugs that caused the game to break? Report <a href="https://forms.gle/FKY7BffyKSsPErDy5">here</a>!'},
+               {}],
+          
+           "blank",
+           "blank",
+           ["display-text",
+           function() {return 'Do not report any bugs that you did not found any bugs.'},
+               {}],
+           "blank",
+       
+           "blank",
+           "blank",
+         
+    ]},
+    "Known Bugs": {
+ 
+        content: ["blank",
+        "blank",
+           ["display-text",
+           function() {return '<h1>Bug #1: Hotkey resets no working</h1>'},
+               {}],
+          
+           "blank",
+           "blank",
+           ["display-text",
+           function() {return 'Pressing any key that is supposed to reset and gain the currency but doesnt comply.'},
+               {}],
+           "blank",
+           
+           ["display-text",
+           function() {return '<b>Cause of problem</b>: Bad bindings'},
+               {}],
+           "blank",
+       
+           ["display-text",
+           function() {return '<b>Fixed in update</b>: Fixed in upgrade v0.0.5'},
+               {}],
+           "blank",
+           
+    ]},
+    "Reset Inflation": {
+ 
+        content: ["blank",
+        "blank",
+        "blank",
+        ["display-text",
+        function() {return 'You can reset if your production is more than 1F100.'},
+            {}],
+         "clickables",
+          
+           "blank",
+           "blank",
+           
+           
+    ]}
+   
+
+},
   
     layerShown(){return true},
-
+    clickables: {
       
-   
+        11: {
+            title: "Reset",
+            display() { return "Reset inflated currencies"},
+            unlocked() { return true },
+            canClick() { return true },
+            onClick() { 
+         if (!confirm("Are you sure you want to reset inflated currencies, If your currency is more than 1F100, please reset.")) return;
+         if (!confirm("This will remove all production but fix inflated problem.")) return;
+         player.points = new Decimal(0),
+         player.p.points = new Decimal(0),
+         player.p.best = new Decimal(0),
+         player.p.total = new Decimal(0);
+         player.o.points = new Decimal(0),
+         player.w.points = new Decimal(0),
+         player.w.cookiesFed = new Decimal(0),
+         player.o.best = new Decimal(0),
+         player.o.milestones = [],
+ 
+         player.o.total = new Decimal(0);
+            player.p.upgrades = [];
+          player.o.upgrades = [];
+          doReset("xe", true);
+            },
+            style: {width: "160px", height: "160px",background:"red",},
+        
+    
+    },
+      
+}
 
 })
 addLayer("po", {
@@ -1239,7 +1377,9 @@ addLayer("po", {
 		points: new Decimal(0),
        best: new Decimal(0),
        total: new Decimal(0),
-      
+       reincarBase: new Decimal(1),
+       reincarnations: new Decimal(0),
+       copGain: new Decimal(1)
     }},
   
     color: "cyan",
@@ -1252,13 +1392,26 @@ addLayer("po", {
 branches: ["p"],
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
-       
+        if (hasUpgrade("po", 24)) mult = mult.pow(1.05);
+        if (hasUpgrade("po", 32)) mult = mult.times(upgradeEffect("po",32));
+        if (player.po.unlocked) mult = mult.times(tmp.po.buyables[13].effect.first);
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
         exp = new Decimal(1)
-       
+        if(hasUpgrade("po",12)) exp = exp.times(2);
+        if (player.po.unlocked) exp = exp.times(tmp.po.buyables[11].effect.first);
         return exp
+    },
+    directMult() {
+        mult = new Decimal(1)
+    
+
+        if (hasUpgrade("po", 22)) mult = mult.times(3);
+       
+        if (player.po.unlocked) mult = mult.times(tmp.po.buyables[12].effect.first);
+
+        return mult
     },
     prestigeButtonText() { //Is secretly HTML
       
@@ -1268,7 +1421,197 @@ branches: ["p"],
     hotkeys: [
         {key: "shift+p", description: "Shift+P: Reset for poachers", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
- 
+    passiveGeneration() { return (hasMilestone("po", 0))?0.01:0 },
+    tabFormat: {
+        "Poachers": {
+            unlocked() {return (!hasMilestone("po",0))}, 
+            content: ["main-display",
+            "prestige-button",
+            "blank",
+            "resource-display",
+            "blank",
+            "blank",
+            "milestones",
+            "blank",
+               "upgrades",
+               "blank",
+               ["display-text",
+               function() {return (hasUpgrade("po",14)?'Progress to Smash Zirconium.':'')},
+                   {}],
+               "blank",
+           
+               "blank",
+               ["bar", "progressBar"],
+               "blank",
+               
+        ]},
+        "Poachers": {
+            unlocked() {return hasMilestone("po",0)}, 
+            content: ["main-display",
+     
+            "resource-display",
+            "blank",
+            "blank",
+            "milestones",
+            "blank",
+               "upgrades",
+               "blank",
+               ["display-text",
+               function() {return (hasUpgrade("po",14)?'Progress to Smash Zirconium.':'')},
+                   {}],
+               "blank",
+           
+               "blank",
+               ["bar", "progressBar"],
+               "blank",
+               
+        ]},
+        "Smash Poachers": {
+            unlocked() {return hasUpgrade("po",14)},
+            content: ["blank",
+            "blank",
+            "blank",
+              "challenges",
+               "blank",
+               "blank",
+               ["display-text",
+               function() {return 'Progress to Smash Zirconium.'},
+                   {}],
+               "blank",
+               
+            
+               "blank",
+           
+               ["bar", "progressBar"],
+               "blank",
+              "blank",
+        ]},
+        "Buyables": {
+            unlocked() {return hasUpgrade("po",21)},
+            content: ["blank",
+            "blank",
+            "blank",
+              
+               "blank",
+               "blank",
+              
+               "buyables"
+        ]},
+        "Reincarnated Poachers": {
+            unlocked() {return hasUpgrade("po",25)},
+            content: ["blank",
+            "blank",
+            ["display-image", "images/howisreincarnationagirl.webp"],
+            "blank",
+"blank",
+
+            ["display-text",
+            function() {return 'Reincarnation Base: '+formatWhole(player.po.reincarBase)},
+                {}],
+            "blank",
+            "blank",
+            ["display-text",
+            function() {return 'Cop Base: '+formatWhole(player.po.copGain)},
+                {}],
+            "blank",
+            "blank",
+            ["display-text",
+            function() {return 'You have <h2>'+formatWhole(player.po.reincarnations)+'</h2> Reincarnated Poachers'},
+                {}],
+                "blank",
+          "clickables",
+          "blank",
+          "blank",
+       
+               
+        ],
+        },
+        "Smash Rhenium": {
+            unlocked() {return inChallenge("po",21)},
+            content: ["blank",
+            "blank",
+            
+            ["display-image","images/rhenium.webp"],
+            
+           
+            
+          "blank",
+          "blank",
+          ["display-text",
+          function() {return 'Hmmmm... I am Rhenium and my age is the same as my atomic number, You wanna smash me? Along with Hafnium and Zirconium?!'},
+              {}],
+              "blank",
+              "blank",
+              ["display-text",
+              function() {return 'I believe you are far from getting a new milestone for your gameplay here, I wanna to see what you did.'},
+                  {}],
+                  "blank",
+              ["display-text",
+              function() {return 'Go ahead, and try to reach a lot of points so you will not try to beat me! Loser MWAHAHAHAHAHAHAHAHAHA!'},
+                  {}],
+                  "blank",  "blank",  "blank",
+              ["display-text",
+              function() {return 'Something that I did not enough and I did not like being a very young metal when I was first discovered and my age is always be keeping as the same as my atomic number.'},
+                  {}],
+                  
+                  "blank",
+              ["display-text",
+              function() {return 'I have a purple, Guerrequila, looking hat that I have in my head, you would not banish me to the metal grinder as I have my husband, Osmium.'},
+                  {}],
+        ],
+        }
+       
+    
+    },
+    clickables: {
+      
+        11: {
+            title: "Reincarnate",
+            display() { return "Sacrifice all of your Poachers but gain Reincarnated Poachers"},
+            unlocked() {return hasUpgrade("po",25)},
+            canClick() { return hasUpgrade("po",25) && player.po.points.gt(0) },
+            onClick() { 
+                player.po.reincarnations = player.po.reincarnations.plus(player.po.points).times(player.po.reincarBase);
+                player.po.points = player.po.points.minus(player.po.reincarnations);
+            },
+            style: {width: "160px", height: "120px",background:"yellow",},
+          
+        },
+        12: {
+            title: "Cookie Fees",
+            display() { return "Sacrifice all of your Reincarnated Poachers but gain Cop Cookies."},
+            unlocked() {return hasUpgrade("po",25)},
+            canClick() { return hasUpgrade("po",25) && player.po.reincarnations.gt(0) },
+            onClick() { 
+                player.w.copCodes = player.w.copCodes.plus(player.po.reincarnations).times(player.po.copGain);
+                player.po.reincarnations = player.po.reincarnations.minus(player.w.copCodes);
+            },
+            style: {width: "160px", height: "120px",background:"yellow",},
+          
+        },
+      
+    
+    },
+    bars: {
+        progressBar: {
+            fillStyle: {'background-color' : "black"},
+            baseStyle: {'background-color' : "cyan"},
+            textStyle: {'color': 'white'},
+    
+            borderStyle() {return {}},
+            direction: RIGHT,
+            width: 600,
+            height: 70,
+            progress() {
+                return (player.po.points.add(1).log(10).div(6)).toNumber()
+            },
+            display() {
+                return format(player.po.points) + " / 1e6 Poachers"
+            },
+            unlocked() { return hasUpgrade("po", 14) },
+    
+        },
+    },
     layerShown(){return hasChallenge("o",41)},
     onPrestige() {
         player.points = new Decimal(0),
@@ -1282,20 +1625,108 @@ branches: ["p"],
         player.o.milestones = [],
 
         player.o.total = new Decimal(0);
-   player.p.upgrades = [];
-   player.o.upgrades = [];
+           player.p.upgrades = [];
+         player.o.upgrades = [];
                     },
 
                     milestones: {
          
                         0: {requirementDescription: "5 Poachers",
                         done() {return player[this.layer].best.gte(5)}, // Used to determine when to give the milestone
-                        effectDescription: "Keep Exponent and Orbs upgrades.",
+                        effectDescription: "Gain 1% of Poachers per second but disable Prestige button.",
                     },
-                 
+                    1: {requirementDescription: "100 Poachers",
+                    done() {return player[this.layer].best.gte(100)}, // Used to determine when to give the milestone
+                    effectDescription: "Autobuy Orb Slasher.",
+                    unlocked() {return hasMilestone("po",0)},
+                    toggles: [
+                        ["p","auto2"],
+                      ]
+                },
                 
                 
                 },
+                challenges: {
+                    11: {
+                        name: "Smash Hafnium",
+                        challengeDescription: "You always gain 1 point per second and cannot be boosted.",
+                      goal(){
+                       return new Decimal(500);
+                            
+                          
+                        },
+                        onEnter() {
+                            player.points = new Decimal(0),
+                            player.p.points = new Decimal(0),
+                            player.p.best = new Decimal(0),
+                            player.p.total = new Decimal(0);
+                            player.o.points = new Decimal(0),
+                            player.w.points = new Decimal(0),
+                            player.w.cookiesFed = new Decimal(0),
+                            player.o.best = new Decimal(0),
+                            player.o.milestones = [],
+                    
+                            player.o.total = new Decimal(0);
+                           player.p.upgrades = [];
+                         player.o.upgrades = [];
+                        },
+                        rewardDescription: "Points is raised to the power of 1.07.",
+                        
+                    },
+                    12: {
+                        name: "Smash Zirconium",
+                        challengeDescription: "Exponent Upgrade 11, some Exponent and Orb upgrades boosting Points gain with no effect, challenge rewards and some Poacher upgrades are the only thing that boosts Point gain, Points gain will be divided for Exponent coins, Orb's base is divided by 1,000.",
+                      goal(){
+                       return new Decimal(1e17);
+                            
+                          
+                        },
+                        onEnter() {
+                            player.points = new Decimal(0),
+                            player.p.points = new Decimal(1),
+                            player.p.best = new Decimal(0),
+                            player.p.total = new Decimal(0);
+                            player.o.points = new Decimal(0),
+                            player.w.points = new Decimal(0),
+                            player.w.cookiesFed = new Decimal(0),
+                            player.o.best = new Decimal(0),
+                            player.o.milestones = [],
+                    
+                            player.o.total = new Decimal(0);
+                           player.p.upgrades = [];
+                         player.o.upgrades = [];
+                        },
+                        rewardDescription: "Raise the Poacher's exponent by 1.05.",
+                        unlocked() {return player.po.points.gte(1e6)},
+                    },
+                    21: {
+                        name: "Smash Rhenium",
+                        challengeDescription: "Points gain is tetrated to 0.001, you can't get any Orbs, exponent coins direct multipler is divided by 10000.",
+                      goal(){
+                       return new Decimal(1e3);
+                            
+                          
+                        },
+                        onEnter() {
+                            player.points = new Decimal(0),
+                            player.p.points = new Decimal(1),
+                            player.p.best = new Decimal(0),
+                            player.p.total = new Decimal(0);
+                            player.o.points = new Decimal(0),
+                            player.w.points = new Decimal(0),
+                            player.w.cookiesFed = new Decimal(0),
+                            player.o.best = new Decimal(0),
+                            player.o.milestones = [],
+                    
+                            player.o.total = new Decimal(0);
+                           player.p.upgrades = [];
+                         player.o.upgrades = [];
+                        },
+                        rewardDescription: "Beat the game.",
+                        unlocked() {return hasUpgrade("po",35)},
+                    }
+                },
+                
                 upgrades: {
 			
 			
@@ -1309,5 +1740,337 @@ branches: ["p"],
                         
                     },
                     
-                }
+                    12: {
+                        title: "Between The Eggs",
+                        description: "Multiply Poacher's exponent by 2.",
+                        cost: new Decimal(1),
+                      
+                        unlocked() {return player.po.unlocked},
+                    
+                        
+                    },
+                    13: {
+                        title: "Anti-Dubnium Is Strong",
+                        description: "Raise the Points gain by 1.06.",
+                        cost: new Decimal(1),
+                      
+                        unlocked() {return player.po.unlocked},
+                    
+                        
+                    },
+                    14: {
+                        title: "Smash These Challenges!",
+                        description: "Unlock Smash Poachers.",
+                        cost: new Decimal(2),
+                      
+                        unlocked() {return player.po.upgrades.length>=3},
+                    
+                        
+                    },
+                    15: {
+                        title: "Cookie Poachers",
+                        description: "Poachers multiply Cookies gain, and unlock Carson.",
+                        cost: new Decimal(2),
+                        effect() {
+                
+                
+                            let eff = player.po.points.plus(1).pow(0.025);
+                          
+                            return eff;
+                        },
+                  
+                        effectDisplay() { return format(tmp.po.upgrades[15].effect)+"x" },
+                        unlocked() {return hasUpgrade("po",14)},
+                    
+                        
+                    },
+                    21: {
+                        title: "Poaching Exponent",
+                        description: "Unlock a new Poacher buyable.",
+                        cost: new Decimal(4),
+                      
+                  
+                    
+                        unlocked() {return hasUpgrade("po",15)},
+                    
+                        
+                    },
+                    22: {
+                        title: "Poaching-Direct Multipler",
+                        description: "Multiply Poacher's direct multipler by 3.",
+                        cost: new Decimal(10),
+                      
+                  
+                    
+                        unlocked() {return hasUpgrade("po",21)},
+                    
+                        
+                    },
+                        23: {
+                        title: "PvZH's Reincarnation Appearance Looks Like A Boy",
+                        description: "Unlock a new buyable.",
+                        cost: new Decimal(75),
+                      
+                  
+                    
+                        unlocked() {return hasUpgrade("po",22)},
+                    
+                        
+                    },
+                    24: {
+                        title: "Reincarnated Poachers",
+                        description: "Raise the Poachers' multipler by 1.05.",
+                        cost: new Decimal(500),
+                      
+                  
+                    
+                        unlocked() {return hasUpgrade("po",23)},
+                    
+                        
+                    },
+                    25: {
+                        title: "You never know what the next life has in store for you, she says. So get the most out of this one while you can.",
+                        description: "Unlock Reincarnated Poachers.",
+                        cost: new Decimal(2500),
+                      
+                  
+                    
+                        unlocked() {return hasUpgrade("po",24)},
+                    
+                        
+                    },
+                    31: {
+                        title: "Bruited Grandma With Gray Suit And Gray Skirt",
+                        description: "Double the Points gain.",
+                        cost: new Decimal(10000),
+                      
+                  
+     
+                        unlocked() {return hasUpgrade("po",25)},
+                    
+                        
+                    },
+                    32: {
+                        title: "I Don't Pronounce Grind As ɡrīnd",
+                        description: "Reincarnated Poachers multiply Poachers gain.",
+                        cost: new Decimal(20000),
+                        effect() {
+                
+                
+                            let eff = player.po.reincarnations.plus(1).pow(0.03);
+                          
+                            return eff;
+                        },
+                  
+                        effectDisplay() { return format(tmp.po.upgrades[32].effect)+"x" },
+                  
+     
+                        unlocked() {return hasUpgrade("po",31)},
+                    
+                        
+                    },
+                    33: {
+                        title: "Clyde The Ghost",
+                        description: "Unlock Recincarnation Axis",
+                        cost: new Decimal(50000),
+                    
+                  
+     
+                        unlocked() {return hasUpgrade("po",32)},
+                    
+                        
+                    },
+                    34: {
+                        title: "Clyde Clyde Clyde Clyde Clyde Clyde Clyde Clyde Clyde Clyde Clyde",
+                        description: "Points gain is quadrupled.",
+                        cost: new Decimal(100000),
+                    
+                  
+     
+                        unlocked() {return hasUpgrade("po",33)},
+                    
+                        
+                    },
+                    35: {
+                        title: "Egg",
+                        description: "Unlock Smash Rhenium",
+                        cost: new Decimal(2.5e6),
+                    
+                  
+     
+                        unlocked() {return hasUpgrade("po",34)},
+                    
+                        
+                    },
+                    211: {
+                        title: "I am not taking those videos down because those are mine. If anything, you will be the one receiving a copyright claim, not me.",
+                        description: "Pewdiepie: That's my video. Remove it right now, or I will flag you for copyright.<br> Antonio Lombardo: Take it down right now, that's my content you uploaded. <br> Antonio Lombardo: I'm also going to inform your parents about you stealing videos from other creators.<br> Vittorio The Vyonder 2003: Delete your account, and stop re-uploading other people's content.<br> BrentAnimate: Delete the video right now, entitled brat. <br> Kenny Animate: Stop stealing videos, Karen.<br>",
+                        cost: new Decimal(0),
+                      
+                        unlocked() {return false},
+                    
+                        
+                    },
+                    311: {
+                        title: "No, you get off of my platform, or I'm calling the police.",
+                        description: "Kenny Animate: Chances are you're the one who will be sued in court, and for your information, Google owns YouTube. You don't. So stop being delusional.",
+                        cost: new Decimal(0),
+                      
+                        unlocked() {return false},
+                    
+                        
+                    },
+                    411: {
+                        title: "This video is no longer available due to a copyright claim from Pewdiepie",
+                        description: "This video is no longer available due to a copyright claim from Kenny Animate<br>This video is no longer available due to a copyright claim from VittorioTheVyonder2003<br>This video is no longer available due to a copyright claim from BrentAnimate",
+                        cost: new Decimal(0),
+                      
+                        unlocked() {return false},
+                    
+                        
+                    },
+                    511: {
+                        title: "Read the description.",
+                        description: "Due to a copyright takedown notice that we received, we had to take down your video from YouTube <br> Video Title: Some random Boris video<br>Takedown issued by: VittorioTheVyonder2003<br>This means your video can no longer be played on YouTube.",
+                        cost: new Decimal(0),
+                      
+                        unlocked() {return false},
+                    
+                        
+                    },
+                    611: {
+                        title: "You received a copyright strike",
+                        description: "You now have 3 copyright strikes. As a result, your account is scheduled to be disabled in 7 days.",
+                        cost: new Decimal(0),
+                      
+                        unlocked() {return false},
+                    
+                        
+                    },
+                
+                },
+                buyables: {
+                   
+                    11: {
+                        cost(x) { return new Decimal(2).mul(new Decimal(2).pow(x)) },
+                        title() { return "Exponent Poachers" },
+              
+                        display() { // Everything else displayed in the buyable button after the title
+                            let data = tmp[this.layer].buyables[this.id]
+                            return "Cost: " + format(data.cost) + " poachers\n\
+                            Amount: " + player[this.layer].buyables[this.id] + "\n\
+                           Multiplies its own exponent by " + format(data.effect.first) + "x."
+                        },
+                        effect(x) { // Effects of owning x of the items, x is a decimal
+                            let eff = {}
+                            if (x.gte(0)) eff.first = Decimal.pow(1.07, x.pow(1.02))
+                            else eff.first = Decimal.pow(1/30, x.times(-1).pow(1.05))
+                           
+                            if (x.gte(0)) eff.second = x.pow(0.8)
+                            else eff.second = x.times(-1).pow(0.8).times(-1)
+                            return eff;
+                        },
+                        canAfford() { return player[this.layer].points.gte(this.cost()) },
+                        buy() {
+                            player[this.layer].points = player[this.layer].points.sub(this.cost())
+                            setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                        },
+                       
+                    },
+                    12: {
+                        cost(x) { return new Decimal(5).mul(new Decimal(5).pow(x)) },
+                        title() { return "Acidic Poacher" },
+              
+                        display() { // Everything else displayed in the buyable button after the title
+                            let data = tmp[this.layer].buyables[this.id]
+                            return "Cost: " + format(data.cost) + " poachers\n\
+                            Amount: " + player[this.layer].buyables[this.id] + "\n\
+                           Multiplies its own direct multipler by " + format(data.effect.first) + "x."
+                        },
+                        effect(x) { // Effects of owning x of the items, x is a decimal
+                            let eff = {}
+                            if (x.gte(0)) eff.first = Decimal.pow(1.07, x.pow(1.02))
+                            else eff.first = Decimal.pow(1/30, x.times(-1).pow(1.05))
+                           
+                            if (x.gte(0)) eff.second = x.pow(0.8)
+                            else eff.second = x.times(-1).pow(0.8).times(-1)
+                            return eff;
+                        },
+                        canAfford() { return player[this.layer].points.gte(this.cost()) },
+                        buy() {
+                            player[this.layer].points = player[this.layer].points.sub(this.cost())
+                            setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                        },
+                        unlocked() {return hasUpgrade("po",23)}
+                    },
+                    13: {
+                        cost(x) { return new Decimal(5).mul(new Decimal(25).pow(x)) },
+                        title() { return "Reincarnation Axis" },
+              
+                        display() { // Everything else displayed in the buyable button after the title
+                            let data = tmp[this.layer].buyables[this.id]
+                            return "Cost: " + format(data.cost) + " poachers\n\
+                            Amount: " + player[this.layer].buyables[this.id] + "\n\
+                           Multiplies its own gain multipler by " + format(data.effect.first) + "x."
+                        },
+                        effect(x) { // Effects of owning x of the items, x is a decimal
+                            let eff = {}
+                            if (x.gte(0)) eff.first = Decimal.pow(1.07, x.pow(1.02))
+                            else eff.first = Decimal.pow(1/30, x.times(-1).pow(1.05))
+                           
+                            if (x.gte(0)) eff.second = x.pow(0.8)
+                            else eff.second = x.times(-1).pow(0.8).times(-1)
+                            return eff;
+                        },
+                        canAfford() { return player[this.layer].points.gte(this.cost()) },
+                        buy() {
+                            player[this.layer].points = player[this.layer].points.sub(this.cost())
+                            setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                        },
+                        unlocked() {return hasUpgrade("po",33)}
+                    },
+                },
+})
+addLayer("xe", {
+    name: "e", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "???", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: false,
+		points: new Decimal(0),
+       best: new Decimal(0),
+       total: new Decimal(0),
+      
+    }},
+  
+    color: "cyan",
+    requires: new Decimal("1e100000"), // Can be a function that takes requirement increases into account
+    resource: "poachers", // Name of prestige currency
+    baseResource: "exponent coins", // Name of resource prestige is based on
+    baseAmount() {return player.p.points}, // Get the current amount of baseResource
+    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0.25, // Prestige currency exponent
+
+    gainMult() { // Calculate the multiplier for main currency from bonuses
+        mult = new Decimal(1)
+       
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        exp = new Decimal(1)
+
+        return exp
+    },
+    directMult() {
+        mult = new Decimal(1)
+    
+
+
+       
+
+        return mult
+    },
+  row: 2,
+    layerShown(){return false},
+
 })
