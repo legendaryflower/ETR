@@ -36,6 +36,7 @@ addLayer("p", {
         if (hasChallenge("o", 11)) mult = mult.times(20);
         if (hasChallenge("o", 21)) mult = mult.pow(1.05);
         if (inChallenge("po", 21)) mult = mult.div(10000);
+        if (player.s.unlocked) mult = mult.times(tmp.s.buyables[11].effect.first);
         return mult
     },
     softcap: new Decimal(1000),
@@ -1104,6 +1105,7 @@ addLayer("w", {
         mult = new Decimal(1)
         if (hasUpgrade("p", 61)) mult = mult.times(upgradeEffect("p",61));
         if (hasUpgrade("p", 71)) mult = mult.times(upgradeEffect("p",71));
+        if (player.s.unlocked) mult = mult.times(tmp.s.buyables[14].effect.first);
         return mult
     },
     passiveGeneration() { return (hasUpgrade("p", 64))?0.05:0 },
@@ -1305,12 +1307,33 @@ tabFormat: {
            "blank",
            
            ["display-text",
-           function() {return '<b>Cause of problem</b>: Bad bindings'},
+           function() {return '<b>Severity</b>: Low'},
                {}],
            "blank",
        
            ["display-text",
            function() {return '<b>Fixed in update</b>: Fixed in upgrade v0.0.5'},
+               {}],
+           "blank",
+           "blank",
+           ["display-text",
+           function() {return '<h1>Bug #2: No Poachers reset</h1>'},
+               {}],
+          
+           "blank",
+           "blank",
+           ["display-text",
+           function() {return 'When unlocking Poachers, sometimes Poachers prestige button wont appear.'},
+               {}],
+           "blank",
+           
+           ["display-text",
+           function() {return '<b>Severity</b>: Medium'},
+               {}],
+           "blank",
+       
+           ["display-text",
+           function() {return '<b>Fixed in update</b>: Fixed in upgrade v0.0.5.1'},
                {}],
            "blank",
            
@@ -1410,7 +1433,7 @@ branches: ["p"],
         if (hasUpgrade("po", 22)) mult = mult.times(3);
        
         if (player.po.unlocked) mult = mult.times(tmp.po.buyables[12].effect.first);
-
+        if (player.s.unlocked) mult = mult.times(tmp.s.buyables[13].effect.first);
         return mult
     },
     prestigeButtonText() { //Is secretly HTML
@@ -1419,12 +1442,12 @@ branches: ["p"],
      },
     row: 1, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
-        {key: "shift+p", description: "Shift+P: Reset for poachers", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {key: "p", description: "P: Reset for poachers", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     passiveGeneration() { return (hasMilestone("po", 0))?0.01:0 },
     tabFormat: {
         "Poachers": {
-            unlocked() {return (!hasMilestone("po",0))}, 
+           
             content: ["main-display",
             "prestige-button",
             "blank",
@@ -1445,27 +1468,7 @@ branches: ["p"],
                "blank",
                
         ]},
-        "Poachers": {
-            unlocked() {return hasMilestone("po",0)}, 
-            content: ["main-display",
-     
-            "resource-display",
-            "blank",
-            "blank",
-            "milestones",
-            "blank",
-               "upgrades",
-               "blank",
-               ["display-text",
-               function() {return (hasUpgrade("po",14)?'Progress to Smash Zirconium.':'')},
-                   {}],
-               "blank",
-           
-               "blank",
-               ["bar", "progressBar"],
-               "blank",
-               
-        ]},
+       
         "Smash Poachers": {
             unlocked() {return hasUpgrade("po",14)},
             content: ["blank",
@@ -1625,7 +1628,7 @@ branches: ["p"],
         player.o.milestones = [],
 
         player.o.total = new Decimal(0);
-           player.p.upgrades = [];
+      doReset("po",true);
          player.o.upgrades = [];
                     },
 
@@ -1633,7 +1636,7 @@ branches: ["p"],
          
                         0: {requirementDescription: "5 Poachers",
                         done() {return player[this.layer].best.gte(5)}, // Used to determine when to give the milestone
-                        effectDescription: "Gain 1% of Poachers per second but disable Prestige button.",
+                        effectDescription: "Gain 1% of Poachers per second.",
                     },
                     1: {requirementDescription: "100 Poachers",
                     done() {return player[this.layer].best.gte(100)}, // Used to determine when to give the milestone
@@ -1722,7 +1725,8 @@ branches: ["p"],
                            player.p.upgrades = [];
                          player.o.upgrades = [];
                         },
-                        rewardDescription: "Beat the game.",
+                     
+                        rewardDescription: "Unlock Sectors, and gain 1 sector.",
                         unlocked() {return hasUpgrade("po",35)},
                     }
                 },
@@ -1734,7 +1738,7 @@ branches: ["p"],
                         title: "Poached Eggs",
                         description: "Some exponent upgrades cost free.",
                         cost: new Decimal(1),
-                      
+                        onPurchase() {player.po.points = new Decimal(0);},
                         unlocked() {return player.po.unlocked},
                     
                         
@@ -1744,7 +1748,7 @@ branches: ["p"],
                         title: "Between The Eggs",
                         description: "Multiply Poacher's exponent by 2.",
                         cost: new Decimal(1),
-                      
+                     
                         unlocked() {return player.po.unlocked},
                     
                         
@@ -2073,4 +2077,207 @@ addLayer("xe", {
   row: 2,
     layerShown(){return false},
 
+})
+addLayer("s", {
+    name: "sectors", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "S", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: false,
+		points: new Decimal(0),
+       best: new Decimal(0),
+       total: new Decimal(0),
+      
+    }},
+  
+    color: "green",
+   
+    resource: "sectors", // Name of prestige currency
+  
+
+
+    tabFormat: {
+        "Sectors": {
+            buttonStyle() { return {'background-color': 'green'} },
+          
+            content: ["main-display",
+            "blank",
+            "milestones",
+            "blank",
+            "blank",
+            "blank",
+            ["display-text",
+            function() {return '<h3>Sector Buildings</h3>'},
+                {}],
+                ["display-text",
+                function() {return 'Spend your Sectors to purchase Sector Buildings.'},
+
+                    {}],
+                    "blank",
+                    "blank",
+            "buyables",
+           
+            "blank","blank","blank",
+            "clickables",        
+        ]},
+    
+    
+    },
+  row: 2,
+  branches: [["p",2],"o","po"],
+    layerShown(){return false},
+    buyables: {
+        showRespec: true,
+        respec() { // Optional, reset things and give back your currency. Having this function makes a respec button appear
+            resetBuyables(this.layer)
+            doReset(this.layer, true) // Force a reset
+        },
+        respecText: "Respec Buildings", // Text on Respec button, optional    
+        11: {
+            cost(x) { return new Decimal(10).mul(new Decimal(7.5).pow(x)) },
+            title() { return "Exponential Building I" },
+  
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                return "Cost: " + format(data.cost) + " sectors\n\
+                Amount: " + player[this.layer].buyables[this.id] + "\n\
+               Multiplies Exponent Coin's direct multipler by " + format(data.effect.first) + "x."
+            },
+            effect(x) { // Effects of owning x of the items, x is a decimal
+                let eff = {}
+                if (x.gte(0)) eff.first = Decimal.pow(1.07, x.pow(1.02))
+                else eff.first = Decimal.pow(1/30, x.times(-1).pow(1.05))
+               
+                if (x.gte(0)) eff.second = x.pow(0.8)
+                else eff.second = x.times(-1).pow(0.8).times(-1)
+                return eff;
+            },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            style: {'height':'100px'},
+        },
+        12: {
+            cost(x) { return new Decimal(10).mul(new Decimal(10).pow(x)) },
+            title() { return "Pointer Building I" },
+  
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                return "Cost: " + format(data.cost) + " sectors\n\
+                Amount: " + player[this.layer].buyables[this.id] + "\n\
+               Multiplies Points gain by " + format(data.effect.first) + "x."
+            },
+            effect(x) { // Effects of owning x of the items, x is a decimal
+                let eff = {}
+                if (x.gte(0)) eff.first = Decimal.pow(1.09, x.pow(1.02))
+                else eff.first = Decimal.pow(1/30, x.times(-1).pow(1.05))
+               
+                if (x.gte(0)) eff.second = x.pow(0.8)
+                else eff.second = x.times(-1).pow(0.8).times(-1)
+                return eff;
+            },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            style: {'height':'100px'},
+        },
+        13: {
+            cost(x) { return new Decimal(10).mul(new Decimal(12.5).pow(x)) },
+            title() { return "Predator Building I" },
+  
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                return "Cost: " + format(data.cost) + " sectors\n\
+                Amount: " + player[this.layer].buyables[this.id] + "\n\
+               Multiplies Poacher's direct multipler by " + format(data.effect.first) + "x."
+            },
+            effect(x) { // Effects of owning x of the items, x is a decimal
+                let eff = {}
+                if (x.gte(0)) eff.first = Decimal.pow(1.06, x.pow(1.02))
+                else eff.first = Decimal.pow(1/30, x.times(-1).pow(1.05))
+               
+                if (x.gte(0)) eff.second = x.pow(0.8)
+                else eff.second = x.times(-1).pow(0.8).times(-1)
+                return eff;
+            },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            style: {'height':'100px'},
+        },
+        14: {
+            cost(x) { return new Decimal(10).mul(new Decimal(15).pow(x)) },
+            title() { return "Cookie Building I" },
+  
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                return "Cost: " + format(data.cost) + " sectors\n\
+                Amount: " + player[this.layer].buyables[this.id] + "\n\
+               Multiplies Cookie gain by " + format(data.effect.first) + "x."
+            },
+            effect(x) { // Effects of owning x of the items, x is a decimal
+                let eff = {}
+                if (x.gte(0)) eff.first = Decimal.pow(1.06, x.pow(1.02))
+                else eff.first = Decimal.pow(1/30, x.times(-1).pow(1.05))
+               
+                if (x.gte(0)) eff.second = x.pow(0.8)
+                else eff.second = x.times(-1).pow(0.8).times(-1)
+                return eff;
+            },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            style: {'height':'100px'},
+        },
+    
+    },
+    milestones: {
+         
+        0: {requirementDescription: "Depleted Sectors - 1,000 Best Sectors",
+        done() {return player[this.layer].best.gte(1000)}, // Used to determine when to give the milestone
+        effectDescription: "Gaining Sectors does not perform a Row 1 Reset.",
+    },
+    1: {requirementDescription: "Kilosectors - 2,500 Best Sectors",
+    done() {return player[this.layer].best.gte(2500)}, // Used to determine when to give the milestone
+    effectDescription: "Triple the Sectors gain.",
+    unlocked() {return hasMilestone("s",0)}, // Used to determine when to give the milestone
+},
+2: {requirementDescription: "Megasectors - 10,000,000 Best Sectors",
+done() {return player[this.layer].best.gte(1e7)}, // Used to determine when to give the milestone
+effectDescription: "Unlock Superexponents.",
+unlocked() {return hasMilestone("s",1)}, // Used to determine when to give the milestone
+},
+   
+},
+
+
+
+    clickables: {
+      
+        11: {
+         
+            title() { return "Perform a Row 1 reset but gain "+formatWhole(player.o.points)+" Sectors."},
+            unlocked() {return player.s.unlocked},
+            canClick() { return player.s.unlocked && player.o.points.gt(0) },
+            onClick() { 
+                if (!hasMilestone("s", 0))    doReset("po", true);
+                player.s.points = player.s.points.plus(player.o.points)
+                player.o.points = new Decimal(0)
+             
+            },
+            style: {width: "320px"},
+          
+        },
+      
+      
+    
+    },
 })
