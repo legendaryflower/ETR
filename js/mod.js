@@ -13,13 +13,16 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0.5 Alpha",
+	num: "0.0.5.1 Alpha",
 	name: "Alpha Release",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <b><font color="red">NOTE: Spoilers alert!</font></b>
 <br>
+<br>
+<h3>v0.0.5.1 Alpha</h3><br>
+- (Requested by many persons), Fixed a bug where you will not get Poachers. (Bug issue: Severe)<br>
 <br>
 <h3>v0.0.5 Alpha</h3><br>
 - More <b>Poachers</b> content is added.<br>
@@ -102,6 +105,7 @@ function getPointGen() {
 	if (hasUpgrade('po', 31)) gain = gain.times(2)
 	if (hasUpgrade('po', 34)) gain = gain.times(4)
 	if (inChallenge("po", 21)) gain = gain.tetrate(0.001)
+	if (player.s.unlocked) gain = gain.times(tmp.s.buyables[12].effect.first);
 	return gain
 }
 
