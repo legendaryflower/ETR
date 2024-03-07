@@ -49,7 +49,7 @@ addLayer("p", {
             setBuyableAmount("p",12,tmp.p.buyables[12].canAfford?player.p.points.div(1).log(275).floor().add(1):getBuyableAmount("p",12))
           }
       },
-    passiveGeneration() { return (hasUpgrade("o", 31)?0.25:hasUpgrade("p", 35)?0.025:(hasMilestone("o", 2))?0.001:0) },
+    passiveGeneration() { return (hasUpgrade("o", 31)?0.4:hasUpgrade("p", 35)?0.08:(hasMilestone("o", 2))?0.01:0) },
     gainExp() { // Calculate the exponent on main currency from bonuses
         exp = new Decimal(1)
 
@@ -351,7 +351,7 @@ addLayer("p", {
         },
         35: {
             title: "Potential Exponent Gain",
-            description: "You now gain 2.5% of exponent coins per second instead of 0.1%.",
+            description: "You now gain 8% of exponent coins per second instead of 1%.",
             cost: new Decimal(4000000),
 
           
@@ -488,12 +488,12 @@ addLayer("p", {
         61: {
             title: "Cookies Are Overrated",
             description: "Multiply Cookies' gain based on your unfed Cookies.",
-            cost: new Decimal(1e17),
+            cost: new Decimal(2.5e16),
             effect() {
                 
                 
                 let eff = player.w.points.plus(1).pow(0.2);
-              
+                if (eff.gte(10)) eff = new Decimal(10)
                 return eff;
             },
       
@@ -506,12 +506,14 @@ addLayer("p", {
         62: {
             title: "Cookie Feasting",
             description: "You can convert fed cookies back to unfed and fed cookies multiply Points gain.",
-            cost: new Decimal(1.5e17),
+            cost: new Decimal(6.5e16),
             effect() {
                 
                 
                 let eff = player.w.cookiesFed.plus(1).pow(0.5);
                 if (inChallenge("po", 12)) return new Decimal(1);
+                if (eff.gte(10)) eff = new Decimal(10)
+             
                 return eff;
             },
       
@@ -524,7 +526,7 @@ addLayer("p", {
         63: {
             title: "Cookie Monster",
             description: "Gaining cookies via reset doesn't reset Exponent upgrades.",
-            cost: new Decimal(2e17),
+            cost: new Decimal(1e17),
            
           
             unlocked() { return hasUpgrade("p",62) },
@@ -534,7 +536,7 @@ addLayer("p", {
         64: {
             title: "Cookie Clicker Reference",
             description: "You now gain 1% of Cookies per second.",
-            cost: new Decimal(3e17),
+            cost: new Decimal(1.8e17),
            
           
             unlocked() { return hasUpgrade("p",63) },
@@ -544,7 +546,7 @@ addLayer("p", {
         65: {
             title: "Willier",
             description: "Exponent Upgrade 14 is boosted a little bit.",
-            cost: new Decimal(7.5e18),
+            cost: new Decimal(5e17),
            
           
             unlocked() { return hasUpgrade("p",64) },
@@ -554,7 +556,7 @@ addLayer("p", {
         71: {
             title: "Williest",
             description: "Cookies boost their own gain",
-            cost: new Decimal(1e19),
+            cost: new Decimal(1e18),
             effect() {
                 
 
@@ -571,9 +573,36 @@ addLayer("p", {
         72: {
             title: "Wasted His Time",
             description: "Unlock a new Orbic.",
-            cost: new Decimal(5e20),
+            cost: new Decimal(2.5e18),
            
             unlocked() { return hasUpgrade("p",71) },
+          
+            
+        },
+        73: {
+            title: "I Don't Pronounce Vaccine As vakˈsēn",
+            description: "Triple the Sectors gain.",
+            cost: new Decimal(0),
+            onPurchase() {player.s.multi = new Decimal(3);},
+            unlocked() { return hasMilestone("s",1) },
+          
+            
+        },
+        74: {
+            title: "I Pronounce Vaccine As vakˈkīn",
+            description: "Cube the Sectors gain.",
+            cost: new Decimal(0),
+            onPurchase() {player.s.multi = new Decimal(27);},
+            unlocked() { return player.s.points.gte(10000)||hasUpgrade("p",74) },
+          
+            
+        },
+        75: {
+            title: "Sectors Are Burrito",
+            description: "Tesseract the Sectors gain.",
+            cost: new Decimal(0),
+            onPurchase() {player.s.multi = new Decimal(531441);},
+            unlocked() { return player.s.points.gte(100000)||hasUpgrade("p",75) },
           
             
         },
@@ -594,6 +623,7 @@ addLayer("o", {
         auto: false,
         hassium: new Decimal(0.4),
         hassStart: new Decimal(31),
+        autoTimer: new Decimal(1.5),
     }},
     base: 5,
     color: "#e83427",
@@ -604,7 +634,7 @@ addLayer("o", {
     type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     exponent: 1.5, // Prestige currency exponent
     automate() {},
-    autoPrestige() { return (hasMilestone("o", 4) && player.o.auto) },
+    autoPrestige() { return (hasMilestone("o", 4) && player.o.auto &&  player.o.autoTimer.gte(1.5)) },
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
         if (player.o.unlocked) mult = mult.div(tmp.p.buyables[12].effect.first);
@@ -626,7 +656,16 @@ addLayer("o", {
         if(player.p.points.gte(2.5e8)) exp = exp.times(1.2);
         return exp
     },
-  
+    update(diff) {
+        if (!player.o.unlocked) return;
+   
+
+        player.o.autoTimer = player.o.autoTimer.plus(diff);
+    },
+    onPrestige() {
+       
+         player.o.autoTimer = new Decimal(0)
+                    },
     row: 1, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
         {
@@ -641,6 +680,7 @@ addLayer("o", {
     effectDescription() {
         return "which are boosting Points gain by "+format(tmp.o.effect)+"x."
     },
+    
     addToBase() {
         let base = new Decimal(0);
     
@@ -948,11 +988,8 @@ player.p.upgrades = [72]
 },   
 2: {requirementDescription: "10 Orbs",
 done() {return player[this.layer].best.gte(10)}, // Used to determine when to give the milestone
-effectDescription: "Gain 0.1% of exponent coins per second and autobuy Exponent Points.",
+effectDescription: "Gain 1% of exponent coins per second.",
 unlocked() {return hasMilestone("o", 1)},
-toggles: [
-    ["p","auto1"],
-  ]
 },
 3: {requirementDescription: "12 Orbs",
 done() {return player[this.layer].best.gte(12)}, // Used to determine when to give the milestone
@@ -1052,7 +1089,7 @@ unlocked() {return hasUpgrade("o", 31)},
         },
         31: {
             title: "Recursion",
-            description: "You now gain 25% of exponent coins per second.",
+            description: "You now gain 35% of exponent coins per second.",
             cost: new Decimal(18),
         
             unlocked() { return hasUpgrade("o", 24) },
@@ -1726,7 +1763,7 @@ branches: ["p"],
                          player.o.upgrades = [];
                         },
                      
-                        rewardDescription: "Unlock Sectors, and gain 1 sector.",
+                        rewardDescription: "Unlock Sectors.",
                         unlocked() {return hasUpgrade("po",35)},
                     }
                 },
@@ -2083,11 +2120,11 @@ addLayer("s", {
     symbol: "S", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
-        unlocked: false,
+        unlocked: true,
 		points: new Decimal(0),
        best: new Decimal(0),
        total: new Decimal(0),
-      
+      multi: new Decimal(1),
     }},
   
     color: "green",
@@ -2115,6 +2152,12 @@ addLayer("s", {
                     {}],
                     "blank",
                     "blank",
+                    
+            ["display-text",
+            function() {return 'Sector Multipler: '+formatWhole(player.s.multi)},
+                {}],
+                "blank",
+                "blank",
             "buyables",
            
             "blank","blank","blank",
@@ -2125,7 +2168,7 @@ addLayer("s", {
     },
   row: 2,
   branches: [["p",2],"o","po"],
-    layerShown(){return false},
+    layerShown(){return hasChallenge("po",21)},
     buyables: {
         showRespec: true,
         respec() { // Optional, reset things and give back your currency. Having this function makes a respec button appear
@@ -2247,7 +2290,7 @@ addLayer("s", {
     },
     1: {requirementDescription: "Kilosectors - 2,500 Best Sectors",
     done() {return player[this.layer].best.gte(2500)}, // Used to determine when to give the milestone
-    effectDescription: "Triple the Sectors gain.",
+    effectDescription: "Unlock a new Exponent upgrade.",
     unlocked() {return hasMilestone("s",0)}, // Used to determine when to give the milestone
 },
 2: {requirementDescription: "Megasectors - 10,000,000 Best Sectors",
@@ -2269,7 +2312,7 @@ unlocked() {return hasMilestone("s",1)}, // Used to determine when to give the m
             canClick() { return player.s.unlocked && player.o.points.gt(0) },
             onClick() { 
                 if (!hasMilestone("s", 0))    doReset("po", true);
-                player.s.points = player.s.points.plus(player.o.points)
+                player.s.points = player.s.points.plus(player.o.points).times(player.s.multi)
                 player.o.points = new Decimal(0)
              
             },
