@@ -13,13 +13,24 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0.5.1 Alpha",
+	num: "0.0.6 Alpha Part 1",
 	name: "Alpha Release",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <b><font color="red">NOTE: Spoilers alert!</font></b>
 <br>
+<br>
+<h3>v0.0.6 Alpha Part 1</h3><br>
+- Added <b>Sectors</b>, it can be unlocked by completing Smash Rhenium.<br>
+- Added Superexponents, Hyperexponents and Haloexponents. <br>
+- More Smash Poachers are added by reaching 7,800,000,000 Superexponents.<br>
+- Added more content. <br>
+- You can eat a burrito and it will redirect you to meatspin. <br>
+- We may change the game's ID in the 0.0.7 Alpha update because it can interfere with other mods having the "mymod" ID. You need to backup your save and if we change it, you'll may lose your hard work!<br>
+- The plans is to revamp Orbs and Poachers so they can cause less-inflaton problems.<br>
+- Some of the features don't work so don't report a bug because ther Part 1 is unstable.
+<img src="https://cdn.discordapp.com/emojis/875402206667477102.gif?size=48&name=bear%7E1&quality=lossless"><br>
 <br>
 <h3>v0.0.5.1 Alpha</h3><br>
 - (Requested by many persons), Fixed a bug where you will not get Poachers. (Bug issue: Severe)<br>
@@ -106,6 +117,8 @@ function getPointGen() {
 	if (hasUpgrade('po', 34)) gain = gain.times(4)
 	if (inChallenge("po", 21)) gain = gain.tetrate(0.001)
 	if (player.s.unlocked) gain = gain.times(tmp.s.buyables[12].effect.first);
+	if (player.points.gte(1e30)) new Decimal(0);
+	
 	return gain
 }
 
@@ -114,12 +127,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Reach 2,500,000 <b>Reincarnated Poachers</b> to beat the game!</span>`,
+var displayThings = [`<span>Reach 129 <b>Haloexponents</b> to beat the game!</span><br>Be sure to backup your save because we may <br>change the game's ID because it may interfere with other mobs having the "mymod" ID!`,
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.po.reincarnations.gte(new Decimal(2.5e6))
+	return player.s.points.gte(new Decimal("1e129"))
 }
 
 
