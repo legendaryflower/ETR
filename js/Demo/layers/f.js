@@ -112,8 +112,19 @@ addLayer("f", {
             }},
         },
     },
+    upgrades: {
 
+        11: {
+            title: "A",
+            description: "A.",
+            cost: new Decimal(1),
+            unlocked() { return hasUpgrade("c",23) }, // The upgrade is only visible when this is true
+    
+            tooltip: "hi",
+        },
+        
 }, 
+}
 )
 
 const coolParticle = {

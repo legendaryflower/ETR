@@ -2,7 +2,7 @@ let modInfo = {
 	name: "The Modding Tree",
 	id: "modbase",
 	pointsName: "points",
-	modFiles: ["Demo/layers/c.js", "Demo/layers/f.js", "Demo/layers/a.js", "Demo/demoTree.js"],
+	modFiles: ["Demo/layers/c.js", "Demo/layers/f.js", "Demo/layers/a.js","Demo/layers/t.js", "Demo/demoTree.js"],
 
 
 	discordName: "",

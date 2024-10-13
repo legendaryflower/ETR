@@ -151,6 +151,14 @@ addLayer("c", {
                 cost: new Decimal(3),
                 unlocked() { return player[this.layer].unlocked }, // The upgrade is only visible when this is true
             },
+            23: {
+                title: "hot",
+                description: "ra",
+              
+
+                cost: new Decimal(0),
+                unlocked() { return player[this.layer].unlocked }, // The upgrade is only visible when this is true
+            },
         },
         buyables: {
             showRespec: true,
@@ -203,9 +211,8 @@ addLayer("c", {
                 },
             },
         },
-        doReset(resettingLayer){ // Triggers when this layer is being reset, along with the layer doing the resetting. Not triggered by lower layers resetting, but is by layers on the same row.
-            if(layers[resettingLayer].row > this.row) layerDataReset(this.layer, ["points"]) 
-        },
+   
+          
         layerShown() {return true}, // Condition for when layer appears on the tree
         automate() {
         }, // Do any automation inherent to this layer if appropriate

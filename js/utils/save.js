@@ -246,7 +246,7 @@ function NaNcheck(data) {
 			if (!NaNalert) {
 				clearInterval(interval);
 				NaNalert = true;
-				alert("Invalid value found in player, named '" + item + "'. Please let the creator of this mod know! You can refresh the page, and you will be un-NaNed.")
+				alert("This game said that dinosaurs are died by ice and the game has unexpectedly crashed, Please report the bug in the bug report.")
 				return
 			}
 		}
@@ -274,7 +274,7 @@ function importSave(imported = undefined, forced = false) {
 		imported = prompt("Paste your save here");
 	try {
 		tempPlr = Object.assign(getStartPlayer(), JSON.parse(atob(imported)));
-		if (tempPlr.versionType != modInfo.id && !forced && !confirm("This save appears to be for a different mod! Are you sure you want to import?")) // Wrong save (use "Forced" to force it to accept.)
+		if (tempPlr.versionType != modInfo.id && !forced && !confirm("This save appears to be either a different mod, if any layers you have could be different, an inflaton may occur, Are you sure you want to import?")) // Wrong save (use "Forced" to force it to accept.)
 			return;
 		player = tempPlr;
 		player.versionType = modInfo.id;
