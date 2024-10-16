@@ -84,6 +84,9 @@ function shouldNotify(layer){
 			}
 		}
 	}
+
+	
+
 	if (player[layer].activeChallenge && canCompleteChallenge(layer, player[layer].activeChallenge)) {
 		return true
 	}

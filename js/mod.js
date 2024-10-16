@@ -3,7 +3,7 @@ let modInfo = {
 	id: "TETRewrit",
 	author: "RTLF2024",
 	pointsName: "points",
-	modFiles: ["layers.js", "tree.js"],
+	modFiles: ["layers.js", "tree.js","achievements.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -13,13 +13,19 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.0.0",
+	num: "1.0.1",
 	name: "Release",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <b><font color="red">NOTE: Spoilers alert!</font></b><br><br>
 
+	<h3>v1.0.1</h3><br>
+		- Added 3 new layers. There's 2 layers that would come in a next update.<br>
+		- Added Achievements.<br>
+		- Fixed "Points Multiplier-plier" upgrade lying.<br>
+		- Balanced up to 127 Poachers.
+		<br><br>
 	<h3>v1.0.0</h3><br>
 		- Started working on the game.<br>
 		- Absolute Tree may still receive updates but that could be delayed.
@@ -54,7 +60,23 @@ function getPointGen() {
 
 	if (hasUpgrade("ex",23)) gain = gain.pow(2)
 
-	if (player.points.gte(1e12)) gain = gain.root(getPointRooter())
+	if (player.points.gte(1e12)&&!hasUpgrade("ic",13)) gain = gain.root(getPointRooter())
+	
+	if (hasAchievement("ach",21)) gain = gain.pow(1.2)
+		if (inChallenge("ic",11)) gain = gain.sqrt()
+
+		if (hasUpgrade("ic",22)) gain = gain.pow(1.1)
+
+		if (player.o.unlocked) gain = gain.times(tmp.o.effect)
+
+			if (getBuyableAmount("ic",21).gte(1)) gain = gain.times(tmp.ic.universeEffect)
+
+			if (hasUpgrade("ic",26)) gain = gain.times(upgradeEffect("ic",26))
+
+
+	if (hasUpgrade("ic",33)) gain = gain.pow(2)		
+		
+	if (getBuyableAmount("ic",41).gte(1)) gain = gain.pow(tmp.ic.buyables[41].effect.first)
 	return gain;
 }
 
@@ -73,15 +95,16 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Reach 7e16 Exponent Points to beat the game!</span><br><br>Tip: Hover over certain buyable or upgrade to see its formula.
+var displayThings = [`<span>Reach 127 Poachers to beat the game!</span><br><br>Tip: Hover over certain buyable or upgrade to see its formula.
 	`,
-() => (player.points.gte(1e12)&&(canGenPoints())) ? "<span style='color: yellow'> Due to Points overflow, your Points gain is rooted by "+format(getPointRooter())+"." : "",
-() => (player.points.gte(1e20)&&(canGenPoints())) ? "<span style='color: orange'> Due to Points overflow, rooting effect is multiplied by "+format(getPointRooter2())+"." : "",
+() => ((player.points.gte(1e12)&&(canGenPoints()))&&!hasUpgrade("ic",13)) ? "<span style='color: yellow'> Due to Points overflow, your Points gain is rooted by "+format(getPointRooter())+"." : "",
+() => ((player.points.gte(1e20)&&(canGenPoints()))&&!hasUpgrade("ic",13)) ? "<span style='color: orange'> Due to Points overflow, rooting effect is multiplied by "+format(getPointRooter2())+"." : "",
+
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.ex.expPoints.gte("7e16")
+	return player.p.points.gte("127")
 }
 
 function getPointRooter() {
@@ -95,6 +118,9 @@ function getPointRooter2() {
 
 	return base
 }
+
+
+
 
 // Less important things beyond this point!
 
