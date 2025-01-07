@@ -1,9 +1,9 @@
 let modInfo = {
 	name: "The Exponent Tree Rewritten",
 	id: "TETRewrit",
-	author: "RTLF2024",
+	author: "RTLF2025",
 	pointsName: "points",
-	modFiles: ["layers.js", "tree.js","achievements.js"],
+	modFiles: ["layers.js", "tree.js","achievements.js", "willy.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -13,13 +13,18 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.0.1",
+	num: "1.0.2",
 	name: "Release",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <b><font color="red">NOTE: Spoilers alert!</font></b><br><br>
-
+<h3>v1.0.2</h3><br>
+		- Added some new layers.<br>
+	    - You can now check your base point at the Achievements layer. Will be adding savebank and statistics soon. <br>
+		- Added some stuff.<br>
+		- Balanced up to 1 MB (1e6 bytes) in Partition sectors.
+		<br><br>
 	<h3>v1.0.1</h3><br>
 		- Added 3 new layers. There's 2 layers that would come in a next update.<br>
 		- Added Achievements.<br>
@@ -29,6 +34,8 @@ let changelog = `<h1>Changelog:</h1><br>
 	<h3>v1.0.0</h3><br>
 		- Started working on the game.<br>
 		- Absolute Tree may still receive updates but that could be delayed.
+<br><br><br>
+		<a href="https://youtu.be/pa14VNsdSYM">Click here to reach endgame (Not a rickroll!)</a>
 		`
 
 let winText = `This game is currently unfinished and the endgame may change anytime soon but congrats for beating the game!`
@@ -45,7 +52,7 @@ function getStartPoints(){
 
 // Determines if it should show points/sec
 function canGenPoints(){
-	return hasUpgrade("ex",11)
+	return hasUpgrade("ex",11)||hasUpgrade("s",11)
 }
 
 // Calculate points/sec!
@@ -77,6 +84,12 @@ function getPointGen() {
 	if (hasUpgrade("ic",33)) gain = gain.pow(2)		
 		
 	if (getBuyableAmount("ic",41).gte(1)) gain = gain.pow(tmp.ic.buyables[41].effect.first)
+
+		if (hasUpgrade("c",31)) gain = gain.pow(1.5)	
+
+		if (hasUpgrade("s",13)) gain = gain.times(upgradeEffect("s",13))	
+
+	if (hasUpgrade("wi",15)) gain = gain.times(tmp.s.corruptEffect)
 	return gain;
 }
 
@@ -86,17 +99,25 @@ let base = new Decimal(1)
 if (getBuyableAmount("ex",11).gte(1)) base = base.add(player.ex.buyables[11])
 	
 if (hasUpgrade("ex",17)) base = base.add(1)
-	
+
+if (hasUpgrade("c",21)) base = base.times(upgradeEffect("c",21))
+	if (hasUpgrade("c",22)) base = base.times(upgradeEffect("c",22))
+
+if (hasUpgrade("s",12)) base = base.times(10)
+
+	if (hasUpgrade("c",53)) base = base.times(16)
 return base;
 }
 
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
+	newsTotal: decimalZero
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Reach 127 Poachers to beat the game!</span><br><br>Tip: Hover over certain buyable or upgrade to see its formula.
+var displayThings = [`<span>Reach 1 MB in your partition sector</span><br><br>Tip: Hover over certain buyable or upgrade to see its formula.
 	`,
+	
 () => ((player.points.gte(1e12)&&(canGenPoints()))&&!hasUpgrade("ic",13)) ? "<span style='color: yellow'> Due to Points overflow, your Points gain is rooted by "+format(getPointRooter())+"." : "",
 () => ((player.points.gte(1e20)&&(canGenPoints()))&&!hasUpgrade("ic",13)) ? "<span style='color: orange'> Due to Points overflow, rooting effect is multiplied by "+format(getPointRooter2())+"." : "",
 
@@ -104,18 +125,21 @@ var displayThings = [`<span>Reach 127 Poachers to beat the game!</span><br><br>T
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.p.points.gte("127")
+	return tmp.s.clickables[11].capacity.gte(1e6)
 }
 
 function getPointRooter() {
 	let base = player.points.max(1e12).log(1e12).max(1).pow(2)
+	if (hasUpgrade("s",11)) return new Decimal(1)
   if (player.points.gte(1e20)) base = base.times(getPointRooter2())
+
 	return base
 }
 
 function getPointRooter2() {
+	
 	let base = player.points.max(1e20).log(1e20).max(1).pow(2)
-
+	if (hasUpgrade("s",11)) return new Decimal(1)
 	return base
 }
 

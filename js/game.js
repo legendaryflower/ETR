@@ -62,6 +62,7 @@ function getNextAt(layer, canMax=false, useType = null) {
 		if (next.gte(tmp[layer].softcap)) next = next.div(tmp[layer].softcap.pow(decimalOne.sub(tmp[layer].softcapPower))).pow(decimalOne.div(tmp[layer].softcapPower))
 		next = next.root(tmp[layer].gainExp).div(tmp[layer].gainMult).root(tmp[layer].exponent).times(tmp[layer].requires).max(tmp[layer].requires)
 		if (tmp[layer].roundUpCost) next = next.ceil()
+		if (layer=="c") next = next.floor()
 		return next;
 	} else if (type=="custom"){
 		return layers[layer].getNextAt(canMax)
@@ -339,6 +340,26 @@ function gameLoop(diff) {
 		if(diff > limit)
 			diff = limit
 	}
+	if (maxTickLength) {
+		let limit = maxTickLength()
+		if(diff > limit)
+			diff = limit
+			if (player.hideNews && document.getElementById("newsTicker")) {
+				document.getElementById("newsTicker").style.display = "none";
+			}
+			if (document.getElementById("newsbtn")) {
+			document.getElementById("newsbtn").onclick = function() {
+				if (!player.hideNews && document.getElementById("newsbtn") && document.getElementById("newsTicker")) {
+				  document.getElementById("newsTicker").style.display = "none";
+				  player.hideNews = true
+				} else {
+				  document.getElementById("newsTicker").style.display = "block";
+				  player.hideNews = false
+				}
+			  }
+			}
+	}
+
 	addTime(diff)
 	player.points = player.points.add(tmp.pointGen.times(diff)).max(0)
 

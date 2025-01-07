@@ -18,7 +18,7 @@ function startPlayerBase() {
 		timePlayed: 0,
 		keepGoing: false,
 		hasNaN: false,
-
+		hideNews: false,
 		points: modInfo.initialStartPoints,
 		subtabs: {},
 		lastSafeTab: (readData(layoutInfo.showTree) ? "none" : layoutInfo.startTab)
@@ -202,6 +202,7 @@ function load() {
 			player.offTime = { remain: 0 };
 		player.offTime.remain += (Date.now() - player.time) / 1000;
 	}
+	if (player.newsArray === undefined) player.newsArray = [];
 	player.time = Date.now();
 	versionCheck();
 	changeTheme();
