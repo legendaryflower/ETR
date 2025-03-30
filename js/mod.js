@@ -13,12 +13,20 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.0.2",
+	num: "1.1",
 	name: "Release",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <b><font color="red">NOTE: Spoilers alert!</font></b><br><br>
+<h3>v1.1</h3><br>
+		- Added statistics and your base point gain in Achievements has been removed.<br>
+		- Added a savebank for players that don't want to spend a lot of time getting into a layer.<br>
+		- If you progress the game more, you will unlock new achievements.<br>
+		- Added more layer content.<br>
+		- Balanced up to 25 Corruptions.<br>
+		<br><br>
+
 <h3>v1.0.2</h3><br>
 		- Added some new layers.<br>
 	    - You can now check your base point at the Achievements layer. Will be adding savebank and statistics soon. <br>
@@ -61,6 +69,8 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(getBasePointGen())
+
+
 	if (hasUpgrade("ex",12)) gain = gain.times(upgradeEffect("ex",12))
 		if (hasUpgrade("ex",14)) gain = gain.pow(2)
 	
@@ -90,12 +100,16 @@ function getPointGen() {
 		if (hasUpgrade("s",13)) gain = gain.times(upgradeEffect("s",13))	
 
 	if (hasUpgrade("wi",15)) gain = gain.times(tmp.s.corruptEffect)
+
+	if (hasUpgrade("s",45)) gain = gain.times(upgradeEffect("s",45))
 	return gain;
 }
 
 function getBasePointGen() {
 
 let base = new Decimal(1)
+
+if (inChallenge("s",11)) return new Decimal(1)
 if (getBuyableAmount("ex",11).gte(1)) base = base.add(player.ex.buyables[11])
 	
 if (hasUpgrade("ex",17)) base = base.add(1)
@@ -106,6 +120,8 @@ if (hasUpgrade("c",21)) base = base.times(upgradeEffect("c",21))
 if (hasUpgrade("s",12)) base = base.times(10)
 
 	if (hasUpgrade("c",53)) base = base.times(16)
+
+	if (hasUpgrade("wi",22)) base = base.pow(1.1)
 return base;
 }
 
@@ -115,7 +131,7 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Reach 1 MB in your partition sector</span><br><br>Tip: Hover over certain buyable or upgrade to see its formula.
+var displayThings = [`<span>Endgame: Reach 25 Corruptions</span><br><br>Tip: Hover over certain buyable or upgrade to see its formula.
 	`,
 	
 () => ((player.points.gte(1e12)&&(canGenPoints()))&&!hasUpgrade("ic",13)) ? "<span style='color: yellow'> Due to Points overflow, your Points gain is rooted by "+format(getPointRooter())+"." : "",
@@ -125,7 +141,7 @@ var displayThings = [`<span>Reach 1 MB in your partition sector</span><br><br>Ti
 
 // Determines when the game "ends"
 function isEndgame() {
-	return tmp.s.clickables[11].capacity.gte(1e6)
+	return player.s.corruption.gte(25)
 }
 
 function getPointRooter() {

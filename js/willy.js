@@ -16,7 +16,15 @@ addLayer("wi", {
     },
    
   
-  
+    update(diff) {
+      
+        if (hasUpgrade("wi", 17)) {
+          
+            if (layers.wi.clickables[11].canClick()) layers.wi.clickables[11].onClick();
+         
+        }
+    
+      },
 
     tabFormat: [
         "blank", 
@@ -51,6 +59,10 @@ addLayer("wi", {
                 if (getBuyableAmount("ic",44).gte(1)) mult = mult.times(tmp.ic.buyables[44].effect.first)
                 
                 if (hasUpgrade("wi",14)) mult = mult.times(upgradeEffect("wi",14))
+
+                    if (hasUpgrade("s",34)) mult = mult.times(upgradeEffect("s",34))
+
+                        if (hasUpgrade("wi",22)) mult = mult.times(5)
                 return mult;
             },
             display() {
@@ -64,8 +76,8 @@ addLayer("wi", {
             },
             onClick() {
               player.wi.cookies =     player.wi.cookies.add(tmp.wi.clickables[11].gain)
-              player.c.points = new Decimal(0)
-              doReset("ic", true)
+              if (!hasUpgrade("wi",17))  player.c.points = new Decimal(0)
+         if (!hasUpgrade("wi",17))     doReset("ic", true)
                 },
                 style: {'height':'130px', 'width':'175px', 'font-size':'13px',
                
@@ -168,6 +180,61 @@ addLayer("wi", {
             currencyLayer: "wi",
            
             unlocked() {return hasUpgrade("s",23)},
+            
+        },
+        17: {
+            title: "Cookie Universe",
+            description: "Willy Cookies are automatically gained and they don't force an Incremental Reset and don't reset Cookies.",
+            cost: new Decimal(1e10),
+            currencyDisplayName: "willy cookies",
+            currencyInternalName: "cookies",
+            currencyLayer: "wi",
+          
+            unlocked() {return hasAchievement("ach",44)},
+            
+        },
+        21: {
+            title: "Cybercookie",
+            description: "Cheeseburger interval is increased based on Points.",
+            cost: new Decimal(1e13),
+            currencyDisplayName: "willy cookies",
+            currencyInternalName: "cookies",
+            currencyLayer: "wi",
+            effect() {
+                
+
+                let eff = player.points.log10().log10().log10()
+                
+             
+                return eff;
+            },
+           
+            tooltip() {return "log10(log10(log10(Points)))"} ,
+            effectDisplay() { return "+"+format(tmp.wi.upgrades[21].effect)
+             },
+            unlocked() {return hasAchievement("ach",44)},
+            
+        },
+        22: {
+            title: "Secure Cookies",
+            description: "Base points are raised 1.1.",
+            cost: new Decimal(2e13),
+            currencyDisplayName: "willy cookies",
+            currencyInternalName: "cookies",
+            currencyLayer: "wi",
+         
+            unlocked() {return hasAchievement("ach",44)},
+            
+        },
+        23: {
+            title: "Baseline Cookies",
+            description: "Partition incrementing is increased to 100, and Willy Cookies multi is increased by 5.",
+            cost: new Decimal(2e13),
+            currencyDisplayName: "willy cookies",
+            currencyInternalName: "cookies",
+            currencyLayer: "wi",
+         
+            unlocked() {return hasAchievement("ach",44)},
             
         },
     },

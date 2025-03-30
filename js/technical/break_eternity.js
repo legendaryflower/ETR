@@ -2740,3 +2740,7 @@ for (var i = 0; i < 10; ++i)
   return Decimal;
 
 }));
+function fibonacci(n)
+{
+return Math.floor(((((1+Math.sqrt(5))/2)**n)-(((1-Math.sqrt(5))/2)**n))/(((1+Math.sqrt(5))/2)-((1-Math.sqrt(5))/2)))
+}

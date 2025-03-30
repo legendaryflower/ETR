@@ -34,10 +34,11 @@ const newsArray = [
   ["This is what a 5 year old kid will say this: WE GOT EXPONENT TREE REWRITTEN UPDATE BEFORE GTA 6!1!1!1!!!11!!."],
   ["I ate a burrito and it redirected me to meatspin - By some random guy. How can you get redirected into meatspin by just eating a burrito? ??? No answer"],
   ["Don't click on an elephant."],
-  ["Rickrolling seems to be too popular now, maybe let's do alternative rickroll. Onlyroll! You can use this for $0.99/month in a commerical use. Personal use is free."],
+  ["Rickrolling seems to be too popular now, maybe let's do alternative rickroll. Onlyroll! You can use this for free."],
   ["e"],
   ["1.246F1,761 stats sounds what a simple modder will encounter."],
   ["*PUKES* I SAW AN UGLY FLY TODAY"],
+  ["keyboard movement is forever superior"],
 ];
 setTimeout(() => {
   ticker = document.getElementById("newsContent");
