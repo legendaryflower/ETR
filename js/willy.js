@@ -63,6 +63,8 @@ addLayer("wi", {
                     if (hasUpgrade("s",34)) mult = mult.times(upgradeEffect("s",34))
 
                         if (hasUpgrade("wi",22)) mult = mult.times(5)
+
+                            if (hasUpgrade("s",55)) mult = mult.times(upgradeEffect("s",55))
                 return mult;
             },
             display() {
@@ -228,13 +230,35 @@ addLayer("wi", {
         },
         23: {
             title: "Baseline Cookies",
-            description: "Partition incrementing is increased to 100, and Willy Cookies multi is increased by 5.",
+            description: "Partition incrementing is multiplied by 100, and Willy Cookies multi is increased by 5.",
             cost: new Decimal(2e13),
             currencyDisplayName: "willy cookies",
             currencyInternalName: "cookies",
             currencyLayer: "wi",
          
             unlocked() {return hasAchievement("ach",44)},
+            
+        },
+        24: {
+            title: "Williest of Cookies",
+            description: "Each Willy Upgrade purchased grants a percentage boost to Base Points. Doesn't work on TMT's Mighty Cheeseburger",
+            cost: new Decimal(2e14),
+            currencyDisplayName: "willy cookies",
+            currencyInternalName: "cookies",
+            currencyLayer: "wi",
+            effect() {
+                
+
+                let eff = Decimal.pow(1.5, player.wi.upgrades.length);
+                
+               if (inChallenge("s",11)) return new Decimal(1)
+                return eff;
+            },
+           
+            tooltip() {return "WiUpgradePurchased<sup>1.5</sup>"} ,
+            effectDisplay() { return "+"+format(tmp.wi.upgrades[24].effect)+"%"
+             },
+            unlocked() {return hasUpgrade("s",46)},
             
         },
     },

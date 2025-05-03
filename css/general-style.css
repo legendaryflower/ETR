@@ -39,3 +39,63 @@ h1, h2, h3, b, input {
 	color: var(--points);
 	text-shadow: 0 0 10px var(--points);
 }
+
+@keyframes affinity {
+	from {
+		color: #ff0000;
+	}
+	11.1% {
+	   	color: #ff8800;
+	}
+	   
+	22.2% {
+	   	color: #ffff00;
+	}
+	   
+	33.3% {
+	   	color: #00ff00;
+	}
+	   
+	44.4% {
+	   	color: #00ffff;
+	}
+	   
+	55.5% {
+	   	color: #8800ff;
+	}
+	   
+	66.6% {
+	   	color: #ff00ff;
+	}
+	   
+	77.7% {
+	   	color: #ff0088;
+	}
+	   
+	88.9% {
+	   	color: #ffffff;
+	}
+	100% {
+		color: #ff0000;
+	}
+}
+
+.further {
+	color: #4BDC13;
+	animation: further 4s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+}
+
+@keyframes further {
+	0%, 100% {
+		text-shadow: -2px -2px 0px #4BDC13, 2px 2px 0px #35990e;
+	}
+	25% {
+		text-shadow: -2px 2px 0px #4BDC13, 2px -2px 0px #35990e;
+	}
+	50% {
+		text-shadow: 2px 2px 0px #4BDC13, -2px -2px 0px #35990e;
+	}
+	75% {
+		text-shadow: 2px -2px 0px #4BDC13, -2px 2px 0px #35990e;
+	}
+}

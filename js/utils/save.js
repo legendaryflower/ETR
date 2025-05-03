@@ -247,7 +247,7 @@ function NaNcheck(data) {
 			if (!NaNalert) {
 				clearInterval(interval);
 				NaNalert = true;
-				alert("This game said that dinosaurs are died by ice and the game has unexpectedly crashed, Please report the bug in the bug report.")
+				alert("This game said that dinosaurs are killed by ice and the game has unexpectedly crashed. Please report the bug in our Discord Server.")
 				return
 			}
 		}
