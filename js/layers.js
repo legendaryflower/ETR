@@ -2530,12 +2530,12 @@ passiveGeneration() {
             challengeDescription: "TMT is eating his cheeseburger and laughs you as you try to fix the errors shown in Console. See another tab to view penalties.",
            
           goal(){
-           return new Decimal("1e75000");
+           return new Decimal("1e7500");
                 
             
             },
            
-            rewardDescription: "Unlock a new layer: Pashtocha.",
+            rewardDescription: "???",
          
         },
      
