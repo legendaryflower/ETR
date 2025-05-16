@@ -3311,7 +3311,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
 
-        unlocked() {return hasUpgrade("s",72)&&inChallenge("s",11)}
+        unlocked() {return hasUpgrade("s",52)&&inChallenge("s",11)}
   
     },
     54: {
