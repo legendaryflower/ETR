@@ -8,7 +8,7 @@ addLayer("wi", {
   
     }},
     color: "gold",
-  symbol: "<img src='Willy 3.png' style='width:calc(85% - 2px);height:calc(85% - 2px);margin:-5%'></img>",
+  symbol: "<img src='Willy 3.PNG' style='width:calc(85% - 2px);height:calc(85% - 2px);margin:-5%'></img>",
     row: "side",
     layerShown() {return hasUpgrade("c",41)}, 
     tooltip() { // Optional, tooltip displays when the layer is locked
@@ -30,7 +30,7 @@ addLayer("wi", {
         "blank", 
         ["display-text", function() { return "<h3>Willy seems to be hungry, feed him cookies to obtain Willy Cookies.</h3>" }], 
         ["display-text", function() { return "Feed him cookies to obtain some Willy Cookies! 1e18 cookies required!" }], 
-         ["display-image", () =>   (true) ? "Willy 3.png":""],
+         ["display-image", () =>   (true) ? "Willy 3.PNG":""],
         "blank", "blank",
         ["display-text", function() { return "You have "+formatWhole(player.c.points)+" Cookies." }], 
         "blank", "blank",
