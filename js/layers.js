@@ -2996,7 +2996,7 @@ passiveGeneration() {
             
             },
            
-            rewardDescription: "Unlock Bifurther-Exponents and The Candy Tree. Gives a boost to pre-Pashtocha layers.",
+            rewardDescription: "Unlock Bifurther-Exponents. Gives a boost to pre-Pashtocha layers. This will change as updates go on.",
          
         },
      
