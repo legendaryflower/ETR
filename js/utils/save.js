@@ -247,8 +247,9 @@ function NaNcheck(data) {
 			if (!NaNalert) {
 				clearInterval(interval);
 				NaNalert = true;
-				alert("This game said that dinosaurs are killed by ice and the game has unexpectedly crashed. Please report the bug in our Discord Server.")
-				return
+				  alert("This game said that dinosaurs are killed by ice and the game has unexpectedly crashed. Please report the bug in our Discord Server. NaNing cause: "+item)
+				
+			
 			}
 		}
 		else if (data[item] instanceof Decimal) {

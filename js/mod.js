@@ -1,9 +1,9 @@
 let modInfo = {
 	name: "The Exponent Tree Rewritten",
 	id: "TETRewrit",
-	author: "RTLF2025",
+	author: "RTLF2026",
 	pointsName: "points",
-	modFiles: ["layers.js", "tree.js","achievements.js", "willy.js"],
+	modFiles: ["layers.js", "tree.js","achievements.js", "willy.js", "trucker.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -13,12 +13,22 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.1.1",
+	num: "1.2",
 	name: "Release",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <b><font color="red">NOTE: Spoilers alert!</font></b><br><br>
+<h3>v1.2</h3><br>
+		- Fully added Pashtocha layer.<br>
+		- Balanced up to 1e20,000 points in Trucking up.<br>
+        - Fixed a bug where 'Follow the Midnight Train' was impossible to purchase.<br>
+		- Fixed some bugs (such as NaN errors when resetting for a Cookie when having specific upgrades) and rebalanced gameplay a little bit.<br>
+		- Renamed an achievement.<br>
+		- Renamed some news and added new ones.<br>
+		- Updated savebank saves.<br>
+		- Added AMD CPUs.<br>
+		<br><br>
 <h3>v1.1.1</h3><br>
 		- Added a discord server to the game! Join to stay up-to-date and chat about the game.<br>
 		- Balanced up to unlocking Pashtocha layer.<br>
@@ -50,7 +60,7 @@ let changelog = `<h1>Changelog:</h1><br>
 		- Started working on the game.<br>
 		- Absolute Tree may still receive updates but that could be delayed.
 <br><br><br>
-		<a href="https://youtu.be/pa14VNsdSYM">Click here to reach endgame (Not a rickroll!)</a>
+		
 		`
 
 let winText = `This game is currently unfinished and the endgame may change anytime soon but congrats for beating the game!`
@@ -115,7 +125,7 @@ function getPointGen() {
 if (inChallenge("s",11)) gain = gain.root(2)
 
 	if (hasUpgrade("s",62)) gain = gain.pow(tmp.s.affinityEffect)
-
+if (hasAchievement("ach",45)&&inChallenge("s",11)) gain = gain.pow(1.3)
 
 		if (hasUpgrade("s",65)) gain = gain.pow(upgradeEffect("s",65))
 		let gainSoftcap = new Decimal(softcapCheeseburger())
@@ -135,18 +145,36 @@ if (inChallenge("s",11)) gain = gain.root(2)
 								if (hasUpgrade("s",97)) gain = gain.pow(1.1)
 									if (hasUpgrade("s",107)) gain = gain.pow(1.1)
 
+					if (getBuyableAmount("ic",61).gte(1)&&inChallenge("s",11)) gain = gain.pow(tmp.ic.buyables[61].effect.first)
+
+if (inChallenge("pa",11)) gain = gain.pow(0.1)
 
 
+	if (getBuyableAmount("p",16).gte(1)&&inChallenge("s",11)) gain = gain.pow(tmp.p.buyables[16].effect.first)
+
+		if (hasUpgrade("s",104)&&player.truck.inTrucking.gte(1)) gain = gain.pow(1.05)
+			if (player.truck.inTrucking.gte(1)) gain = gain.pow(0.4)
+
+if (hasUpgrade("pa",46)) gain = gain.pow(1.45)
+	if (hasUpgrade("pa",51)) gain = gain.pow(upgradeEffect("pa",51))
 						let gainSoftcap2 = new Decimal(softcapPoints())
 			if (gain.gte(gainSoftcap2)&&!inChallenge("s",11)) gain = Decimal.pow(10,Decimal.log10(gain.div(gainSoftcap2)).pow(2/6)).mul(gainSoftcap2)
+
+
+let gainSoftcap3 = new Decimal(softcapCheeseburger2())
+			if (gain.gte(gainSoftcap3)&&inChallenge("s",11)) gain = Decimal.pow(10,Decimal.log10(gain.div(gainSoftcap3)).pow(2/6)).mul(gainSoftcap3)
+
+
+
 	return gain;
 }
 
 function getBasePointGen() {
 
 let base = new Decimal(1)
-
-if (inChallenge("s",11)) return new Decimal(1)
+	if (inChallenge("pa",11)) return new Decimal(1)
+if (inChallenge("s",11)&&!hasMilestone("pa",5)) return new Decimal(1)
+	if (player.truck.inTrucking.gte(1)) return new Decimal(1)
 if (getBuyableAmount("ex",11).gte(1)) base = base.add(player.ex.buyables[11].times(tmp.ex.buyables[11].pegasus))
 	
 if (hasUpgrade("ex",17)) base = base.add(1)
@@ -162,7 +190,11 @@ if (hasUpgrade("s",12)) base = base.times(10)
 
 		if (hasUpgrade("wi",24)&&!inChallenge("s",11)) base = base.times(upgradeEffect("wi",24).div(100))
 
-		
+			if (getBuyableAmount("ic",62).gte(1)) base = base.pow(tmp.ic.buyables[62].effect.first)
+
+	if (player.pa.unlocked&&player.s.unlocked) base = base.times(tmp.s.pentiumEffect2)
+		if (hasUpgrade("pa",26)) base = base.times(upgradeEffect("pa",26))
+		if (inChallenge("s",11)&&hasMilestone("pa",5)) base = base.root(2)
 return base;
 }
 
@@ -172,13 +204,15 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Endgame: Unlock Pashtocha layer.</span><br><br>Tip: Hover over certain buyable or upgrade to see its formula.
+var displayThings = [`<span>Endgame: 1e20,000 points while trucking up.</span><br><br>Tip: Hover over certain buyable or upgrade to see its formula.
 	`,
 	
 () => ((player.points.gte(1e12)&&(canGenPoints()))&&!hasUpgrade("ic",13)) ? "<span style='color: yellow'> Due to Points overflow, your Points gain is rooted by "+format(getPointRooter())+"." : "",
 () => ((player.points.gte(1e20)&&(canGenPoints()))&&!hasUpgrade("ic",13)) ? "<span style='color: orange'> Due to Points overflow, rooting effect is multiplied by "+format(getPointRooter2())+"." : "",
 () => ((player.points.gte(softcapCheeseburger())&&(canGenPoints()))&&inChallenge("s",11)) ? "<span style='color: red'> After "+format(softcapCheeseburger())+" Points/sec, Points gain is softcapped!" : "",
+() => ((player.points.gte(softcapCheeseburger2())&&(canGenPoints()))&&inChallenge("s",11)) ? "<span style='color: red'> After "+format(softcapCheeseburger2())+" Points/sec, Points gain is <b>even more</b> softcapped!" : "",
 () => ((player.points.gte(softcapPoints())&&(canGenPoints()))&&!inChallenge("s",11)) ? "<span style='color: red'> After "+format(softcapPoints())+" Points/sec, Points gain is <b>massively</b> softcapped!" : "",
+() => (player.truck.inTrucking.gte(1)) ? "You are trucking up. You spent "+format(player.truck.time)+" seconds while trucking." : "",
 ]
 function softcapCheeseburger() {
  let softcap = new Decimal("1e1000")
@@ -187,15 +221,35 @@ function softcapCheeseburger() {
 
 }
 
+function softcapCheeseburger2() {
+ let softcap = new Decimal("1e17000")
+
+ return softcap;
+
+}
 function softcapPoints() {
 	let softcap = new Decimal("1e13750")
+  if (player.s.intel.gte(3)) softcap = softcap.pow(tmp.s.celeronEffect)
+	if (hasUpgrade("pa",12)) softcap = softcap.times(1e6)
+			if (hasUpgrade("pa",21)) softcap = softcap.times(upgradeEffect("pa",21))
 
+		if (getBuyableAmount("s",14).gte(1)) softcap = softcap.pow(tmp.s.buyables[14].effect.first)
+
+			if (hasAchievement("ach",27)) softcap = softcap.pow(1.02)
+					if (hasUpgrade("c",82)) softcap = softcap.pow(1.05)
+
+
+	if (hasUpgrade("c",72)) softcap = softcap.pow(1.03)
+
+			if (hasUpgrade("c",62)) softcap = softcap.pow(1.02)
+
+				if (hasUpgrade("pa",53)&&player.truck.inTrucking.gte(1)) softcap = softcap.pow(upgradeEffect("pa",53))
 	return softcap;
    
    }
 // Determines when the game "ends"
 function isEndgame() {
-	return hasUpgrade("s",97)
+	return player.truck.pointsinTrucking.gte("1e20000")
 }
 
 function getPointRooter() {

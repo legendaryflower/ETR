@@ -30,7 +30,7 @@ addLayer("wi", {
         "blank", 
         ["display-text", function() { return "<h3>Willy seems to be hungry, feed him cookies to obtain Willy Cookies.</h3>" }], 
         ["display-text", function() { return "Feed him cookies to obtain some Willy Cookies! 1e18 cookies required!" }], 
-         ["display-image", () =>   (true) ? "/Willy 3.png":""],
+         ["display-image", () =>   (true) ? "Willy 3.png":""],
         "blank", "blank",
         ["display-text", function() { return "You have "+formatWhole(player.c.points)+" Cookies." }], 
         "blank", "blank",
@@ -101,7 +101,7 @@ addLayer("wi", {
 
                 let eff = player.ex.expPoints.pow(0.0008).add(1)
                 
-             
+                if (player.truck.inTrucking.gte(1)) eff = eff.root(3)
                 return eff;
             },
             tooltip() {return "ExpPoint+1<sup>0.0008</sup"} ,
@@ -109,7 +109,7 @@ addLayer("wi", {
         },
         12: {
             title: "Cookie Garden",
-            description: "Passively generate Cookies based on Points (capped at 100%).",
+            description() {return "Passively generate Cookies based on Points (capped at "+format(tmp.wi.upgrades[this.id].cap)+"%)."},
             cost: new Decimal(25),
             currencyDisplayName: "willy cookies",
             currencyInternalName: "cookies",
@@ -124,7 +124,7 @@ addLayer("wi", {
                 return eff;
             },
             cap() { let cap = new Decimal(100)
-
+  if (hasUpgrade("pa",33)) cap = cap.times(1000)
                    
                 return cap; },
             tooltip() {return "Points+1<sup>0.0002</sup"} ,
@@ -205,7 +205,7 @@ addLayer("wi", {
             effect() {
                 
 
-                let eff = player.points.log10().log10().log10()
+                let eff = player.points.add(1).log10().add(1).log10().add(1).log10()
                 
              
                 return eff;

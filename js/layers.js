@@ -15,6 +15,7 @@ addLayer("ex", {
     baseAmount() {return player.points}, // Get the current amount of baseResource
     type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     exponent() {let base = new Decimal(2) 
+        if (inChallenge("pa",11)) return new Decimal(2)
  if (hasUpgrade("ic",37)) base = base.sub(0.5)
     if (hasUpgrade("s",52)&&inChallenge("s",11)) base = base.sub(0.3)
         return base;
@@ -25,7 +26,7 @@ if (getBuyableAmount("p",12).gte(1)) base = base.sub(tmp.p.buyables[12].effect)
     },
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
-        if (inChallenge("s",11)) return new Decimal(1).times(tmp.s.cheeseburgerEff) 
+   
   if (inChallenge("ic",12)) return new Decimal(0)
 
 
@@ -82,11 +83,14 @@ if (getBuyableAmount("p",12).gte(1)) base = base.sub(tmp.p.buyables[12].effect)
     doReset(resettingLayer) {
 
         let keep = [];
-        if (resettingLayer=="s") player.ex.upgrades.push(11)
+   
      
       if (hasUpgrade("ic",11)) keep.push("upgrades")
-        if ((hasAchievement("ach",14))&&resettingLayer=="o"||resettingLayer=="ic"||resettingLayer=="r") keep.push("buyables")
-      
+        if (hasAchievement("ach",14)&&resettingLayer=="o") keep.push("buyables")
+           if (hasAchievement("ach",14)&&resettingLayer=="r") keep.push("buyables")
+           if (hasAchievement("ach",14)&&resettingLayer=="ic") keep.push("buyables")
+     
+        
         if (layers[resettingLayer].row > this.row) layerDataReset("ex", keep)
 
    
@@ -98,9 +102,9 @@ return new Decimal(1.05)
  if (!player.ex.unlocked) return new Decimal(0)
         let eff = Decimal.pow(this.baseEff(), player.ex.points.plus()).sub(1).max(0);
  if (inChallenge("ic",12)) eff = eff.add(1)
- if (hasUpgrade("ex",13)) eff = eff.times(upgradeEffect("ex",12))
+ if (hasUpgrade("ex",12)) eff = eff.times(upgradeEffect("ex",12))
     
-
+    if (hasUpgrade("ex",13)) eff = eff.times(upgradeEffect("ex",13))
 if (getBuyableAmount("ex",12).gte(1)) eff = eff.times(tmp.ex.buyables[12].effect.first)
 
     if (hasUpgrade("ex",22)) eff = eff.pow(upgradeEffect("ex",22))
@@ -135,6 +139,7 @@ if (getBuyableAmount("ex",12).gte(1)) eff = eff.times(tmp.ex.buyables[12].effect
     effSoftcap() {
         let cap = new Decimal("1e4100")
      if (hasUpgrade("s",37)) cap = cap.times(upgradeEffect("s",37))
+        if (hasUpgrade("pa",45)) cap = cap.pow(upgradeEffect("pa",45))
         return cap;
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
@@ -256,6 +261,7 @@ if (getBuyableAmount("ex",12).gte(1)) eff = eff.times(tmp.ex.buyables[12].effect
                 let base = new Decimal(5);
             
             if (hasAchievement("ach",32)) base = base.sub(1.75)
+                  if (hasUpgrade("pa",43)) base = base.sub(1.5)
                 return base;
             },
             cost(x=player[this.layer].buyables[this.id]) { // cost for buying xth buyable, can be an object if there are multiple currencies
@@ -298,7 +304,7 @@ if (getBuyableAmount("ex",12).gte(1)) eff = eff.times(tmp.ex.buyables[12].effect
             },
             style: {'height':'222px'},
             unlocked() {return hasUpgrade("ic",11)},
-            tooltip() {return "1.5sup>x<sup>1.15</sup></sup>"} ,
+            tooltip() {return "1.5<sup>x<sup>1.15</sup></sup>"} ,
         },
     },
 	tabFormat: ["main-display",
@@ -334,6 +340,7 @@ if (getBuyableAmount("ex",12).gte(1)) eff = eff.times(tmp.ex.buyables[12].effect
              if (inChallenge("ic",13)) return new Decimal(1)
                 let eff = player.ex.expPoints.plus(1).pow(0.3).pow(hasUpgrade("ex",31) ? 1.2 : 1)
              if (inChallenge("s",11)) eff = eff.root(2)
+                if (player.truck.inTrucking.gte(1)) eff = eff.root(3)
               let softcap = new Decimal(tmp.ex.upgrades[this.id].softcapStart)
               if (eff.gte(softcap)) eff = Decimal.pow(10,Decimal.log10(eff.div(softcap)).pow(3/6)).mul(softcap)
                 return eff;
@@ -406,6 +413,7 @@ if (getBuyableAmount("ex",12).gte(1)) eff = eff.times(tmp.ex.buyables[12].effect
                 if (hasUpgrade("c",24)) eff = eff.times(3.5)
              if (getBuyableAmount("ic",45).gte(1)) eff = eff.pow(tmp.ic.buyables[45].effect.first)
                 if (hasAchievement("ach",41)) eff = eff.pow(2)
+                    if (hasUpgrade("pa",14)) eff = eff.times(upgradeEffect("pa",14))
                 return eff;
             },
             effectDisplay() { return "/"+format(tmp.ex.upgrades[16].effect) },
@@ -437,8 +445,8 @@ if (getBuyableAmount("ex",12).gte(1)) eff = eff.times(tmp.ex.buyables[12].effect
             description: "Each upgrade purchased raises Exponent Points gain.",
             cost: new Decimal(2500),
             cap() { let cap = new Decimal(2500)
-
-              
+ if (hasUpgrade("pa",13)) cap = cap.add(500)
+              if (hasUpgrade("pa",35)) cap = cap.pow(2)
                                return cap; },
                            
             currencyDisplayName: "exponent points",
@@ -446,6 +454,8 @@ if (getBuyableAmount("ex",12).gte(1)) eff = eff.times(tmp.ex.buyables[12].effect
             currencyLayer: "ex",
             effect() {
                 let eff = Decimal.pow(1.05, player.ex.upgrades.length).min(tmp.ex.upgrades[this.id].cap);;
+                if (player.truck.inTrucking.gte(1)) eff = eff.root(3)
+                if (player.s.unlocked) eff =eff.times(2)
                 if (inChallenge("s",11)) eff = eff.root(2)
                 return eff;
             },
@@ -506,7 +516,9 @@ if (getBuyableAmount("ex",12).gte(1)) eff = eff.times(tmp.ex.buyables[12].effect
             currencyLayer: "ex",
             effect() {
                 let eff = Decimal.pow(1.08, player.ex.upgrades.length);
+                if (player.truck.inTrucking.gte(1)) eff = eff.root(3)
                 if (inChallenge("s",11)) eff = eff.root(2)
+                       if (hasUpgrade("pa",14)) eff = eff.times(upgradeEffect("pa",14))
                 return eff;
             },
             effectDisplay() { return format(tmp.ex.upgrades[27].effect)+"x" },
@@ -536,6 +548,7 @@ addLayer("ic", {
   energy: new Decimal(0),
   uniDimILvl: new Decimal(0),
   uniDimIILvl: new Decimal(0),
+    uniDimIIILvl: new Decimal(0),
   elements: new Decimal(0),
   elementsDimILvl: new Decimal(0),
   elementsDimIILvl: new Decimal(0),
@@ -549,6 +562,7 @@ addLayer("ic", {
     exponent: 0.1, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
+          if (inChallenge("pa",11)) return new Decimal(1)
         if (inChallenge("s",11)) return new Decimal(1).times(tmp.s.cheeseburgerEff) 
         if (player.o.unlocked) mult = mult.times(tmp.o.effect)
         
@@ -557,6 +571,7 @@ addLayer("ic", {
 
             if (hasUpgrade("c",23)) mult = mult.times(upgradeEffect("c",23))
                 if (hasAchievement("ach",41)) mult = mult.times(36)
+                    if (player.pa.unlocked) mult = mult.times(1e6)
         return mult
     },
 
@@ -595,6 +610,9 @@ addLayer("ic", {
             if (resettingLayer=="s") player.ic.upgrades.push(14)
         if (hasUpgrade("s",12)) keep.push("upgrades")
         if (hasUpgrade("s",14)) keep.push("challenges")
+            if (hasMilestone("pa",0)) keep.push("challenges")
+
+          if (hasMilestone("pa",1)) keep.push("upgrades")
         if (layers[resettingLayer].row > this.row) layerDataReset("ic", keep)
     },
 
@@ -602,7 +620,10 @@ update(diff) {
 if (getBuyableAmount("ic",21).gte(1)) player.ic.energy = player.ic.energy.add(getBuyableAmount("ic",21).times(diff)).add(player.ic.uniDimILvl.pow(hasAchievement("ach",41) ? 1.05 : 1))
     if (getBuyableAmount("ic",22).gte(1)) player.ic.uniDimILvl = player.ic.uniDimILvl.add(getBuyableAmount("ic",22).times(diff)).add(player.ic.uniDimIILvl.add(1).pow(5).pow(hasAchievement("ach",41) ? 1.05 : 1))
 
-if (getBuyableAmount("ic",23).gte(1)) player.ic.uniDimIILvl = player.ic.uniDimIILvl.add(getBuyableAmount("ic",23).times(diff))
+if (getBuyableAmount("ic",23).gte(1)) player.ic.uniDimIILvl = player.ic.uniDimIILvl.add(getBuyableAmount("ic",23).times(diff)).add(player.ic.uniDimIIILvl.add(1).pow(5))
+
+    
+if (getBuyableAmount("ic",24).gte(1)) player.ic.uniDimIIILvl = player.ic.uniDimIIILvl.add(getBuyableAmount("ic",24).times(diff))
         if (getBuyableAmount("ic",31).gte(1)) player.ic.elements = player.ic.elements.add(getBuyableAmount("ic",31).times(diff)).add(player.ic.elementsDimILvl.pow(tmp.ic.buyables[42].effect.first).pow(hasAchievement("ach",41) ? 1.05 : 1))
 
             if (getBuyableAmount("ic",32).gte(1)) player.ic.elementsDimILvl = player.ic.elementsDimILvl.add(getBuyableAmount("ic",32).times(diff)).add(player.ic.elementsDimIILvl.add(1).pow(5).pow(hasAchievement("ach",41) ? 1.05 : 1))
@@ -625,9 +646,19 @@ if (getBuyableAmount("ic",23).gte(1)) player.ic.uniDimIILvl = player.ic.uniDimII
                 if (hasUpgrade("s",41)) layers.ic.buyables[45].buyMax();
                 if (hasUpgrade("s",36)) layers.ic.buyables[46].buyMax();
                 if (hasUpgrade("s",63)) layers.ic.buyables[47].buyMax();
+                if (player.pa.unlocked) layers.ic.buyables[61].buyMax();
+                if (player.pa.unlocked) layers.ic.buyables[62].buyMax();
+                if (player.pa.unlocked) layers.ic.buyables[63].buyMax();
 
+             if (hasUpgrade("pa",52)) layers.ic.buyables[24].buyMax();
+        if (player.ic.elements.gte(tmp.ic.elementHardcap)) player.ic.elements = new Decimal(tmp.ic.elementHardcap)
+},
 
-        if (player.ic.elements.gte(1e80)) player.ic.elements = new Decimal(1e80)
+elementHardcap() {
+let cap = new Decimal(1e80)
+if (hasUpgrade("truck",11)) cap = cap.times(1e20)
+    if (player.s.intel.gte(5)) cap = cap.pow(tmp.s.pentiumIIIEffect)
+return cap;
 },
     buyables: {
       
@@ -902,6 +933,45 @@ if (getBuyableAmount("ic",23).gte(1)) player.ic.uniDimIILvl = player.ic.uniDimII
             unlocked() {return hasUpgrade("ic",34)},
           
         },
+         24: {
+            title: "Universe Dimension IV",
+            costBase() {
+                let base = new Decimal(100);
+            
+            
+                return base;
+            },
+            cost(x=player[this.layer].buyables[this.id]) { // cost for buying xth buyable, can be an object if there are multiple currencies
+                let base = this.costBase();
+                let cost = Decimal.pow("1e1940", x.add(17.25));
+                return cost.floor()
+            },
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                let display = "Cost: " + formatWhole(data.cost) + " Incremental Coins"+"\n\
+                Generate " + formatWhole(player[this.layer].buyables[this.id])+" Universe Dimensions III every second."
+                return display;
+            },
+            
+         
+            canAfford() {
+                return player.ic.points.gte(tmp[this.layer].buyables[this.id].cost)},
+            buy() { 
+                cost = tmp[this.layer].buyables[this.id].cost
+                player.ic.points = player.ic.points.sub(cost)	
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].add(1)
+            },
+            buyMax() {
+                if (!this.unlocked || !this.canAfford()) return;
+        
+                let target = player.ic.points.max(1).log(10);
+                target = target.plus(1).floor();
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].max(target);
+            },
+            style: {'height':'135px'},
+            unlocked() {return hasUpgrade("pa",52)},
+          
+        },
         31: {
             title: "NINENINE secret Baldi",
             costBase() {
@@ -1024,7 +1094,7 @@ if (getBuyableAmount("ic",23).gte(1)) player.ic.uniDimIILvl = player.ic.uniDimII
             costBase() {
                 let base = new Decimal(1.85);
             
-            
+              if (player.s.intel.gte(6)) base = base.sub(tmp.s.pentiumIVEffect)
                 return base;
             },
             cost(x=player[this.layer].buyables[this.id]) { // cost for buying xth buyable, can be an object if there are multiple currencies
@@ -1228,7 +1298,7 @@ if (getBuyableAmount("ic",23).gte(1)) player.ic.uniDimIILvl = player.ic.uniDimII
             costBase() {
                 let base = new Decimal(2.5);
             
-            
+                if (getBuyableAmount("ic",63).gte(1)) base = base.sub(tmp.ic.buyables[63].effect)
                 return base;
             },
             cost(x=player[this.layer].buyables[this.id]) { // cost for buying xth buyable, can be an object if there are multiple currencies
@@ -1279,7 +1349,7 @@ if (getBuyableAmount("ic",23).gte(1)) player.ic.uniDimIILvl = player.ic.uniDimII
             costBase() {
                 let base = new Decimal(2);
             
-            
+                if (getBuyableAmount("ic",63).gte(1)) base = base.sub(tmp.ic.buyables[63].effect)
                 return base;
             },
             cost(x=player[this.layer].buyables[this.id]) { // cost for buying xth buyable, can be an object if there are multiple currencies
@@ -1373,6 +1443,7 @@ if (getBuyableAmount("ic",23).gte(1)) player.ic.uniDimIILvl = player.ic.uniDimII
             unlocked() {return hasUpgrade("s",63)},
             tooltip() {return "0.01+x*0.01"} ,
         },
+
         51: {
             title: "Universal Shifts",
             costBase() {
@@ -1396,7 +1467,7 @@ if (getBuyableAmount("ic",23).gte(1)) player.ic.uniDimIILvl = player.ic.uniDimII
             effect(x=player[this.layer].buyables[this.id]) { // Effects of owning x of the items, x is a decimal
               
                 let eff = {}
-                if (x.gte(0)) eff.first = Decimal.pow(1.11, x.pow(1.05))
+                if (x.gte(0)) eff.first = Decimal.pow(1.11, x.pow(1.05)).pow(tmp.s.am286Effect)
                 else eff.first = Decimal.pow(1/25, x.times(-1).pow(1.1))
            
             
@@ -1423,6 +1494,159 @@ if (getBuyableAmount("ic",23).gte(1)) player.ic.uniDimIILvl = player.ic.uniDimII
             style: {'width':'222px','height':'222px'},
             unlocked() {return hasAchievement("ach",31)},
             tooltip() {return "1.11<sup>x<sup>1.05</sup></sup>"} ,
+        },
+        61: {
+            title: "Oxygen",
+            costBase() {
+                let base = new Decimal(2.8);
+            
+            
+                return base;
+            },
+            cost(x=player[this.layer].buyables[this.id]) { // cost for buying xth buyable, can be an object if there are multiple currencies
+                let base = this.costBase();
+                let cost = Decimal.pow(base, Decimal.pow(base, x).sub(1));
+                return cost.floor()
+            },
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                let display = "Cost: " + formatWhole(data.cost) + " Elements."+"\n\
+                Amount: " + formatWhole(player[this.layer].buyables[this.id])+"\n\
+                Raises Points while on TMT's Mighty Cheeseburger.<br>Currently: ^"+format(data.effect.first)+"."
+                return display;
+            },
+            effect(x=player[this.layer].buyables[this.id]) { // Effects of owning x of the items, x is a decimal
+              
+                let eff = {}
+                if (x.gte(0)) eff.first = Decimal.pow(1.01, x.pow(1.01))
+                else eff.first = Decimal.pow(1/25, x.times(-1).pow(1.1))
+           
+            
+                if (x.gte(0)) eff.second = x.pow(0.8)
+                else eff.second = x.times(-1).pow(0.8).times(-1)
+            
+                return eff;
+            },
+         
+            canAfford() {
+                return player.ic.elements.gte(tmp[this.layer].buyables[this.id].cost)},
+            buy() { 
+                cost = tmp[this.layer].buyables[this.id].cost
+                player.ic.elements = player.ic.elements.sub(cost)	
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].add(1)
+            },
+            buyMax() {
+                if (!this.unlocked || !this.canAfford()) return;
+                let base = this.costBase();
+                let target = player.ic.elements.max(1).log(base).plus(1).log(base);
+                target = target.plus(1).floor();
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].max(target);
+            },
+            tooltip() {return "1.01<sup>x<sup>1.01</sup></sup>"} ,
+            unlocked() {return player.pa.unlocked},
+            style: {'width':'135px','height':'135px'},
+           
+        },
+        62: {
+            title: "Fluorine",
+            costBase() {
+                let base = new Decimal(3);
+            
+            
+                return base;
+            },
+            cost(x=player[this.layer].buyables[this.id]) { // cost for buying xth buyable, can be an object if there are multiple currencies
+                let base = this.costBase();
+                let cost = Decimal.pow(base, Decimal.pow(base, x).sub(1));
+                return cost.floor()
+            },
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                let display = "Cost: " + formatWhole(data.cost) + " Elements."+"\n\
+                Amount: " + formatWhole(player[this.layer].buyables[this.id])+"\n\
+                Raises Base Points.<br>Currently: ^"+format(data.effect.first)+"."
+                return display;
+            },
+            effect(x=player[this.layer].buyables[this.id]) { // Effects of owning x of the items, x is a decimal
+              
+                let eff = {}
+                if (x.gte(0)) eff.first = Decimal.pow(1.02, x.pow(1.04))
+                else eff.first = Decimal.pow(1/25, x.times(-1).pow(1.1))
+           
+            
+                if (x.gte(0)) eff.second = x.pow(0.8)
+                else eff.second = x.times(-1).pow(0.8).times(-1)
+            
+                return eff;
+            },
+         
+            canAfford() {
+                return player.ic.elements.gte(tmp[this.layer].buyables[this.id].cost)},
+            buy() { 
+                cost = tmp[this.layer].buyables[this.id].cost
+                player.ic.elements = player.ic.elements.sub(cost)	
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].add(1)
+            },
+            buyMax() {
+                if (!this.unlocked || !this.canAfford()) return;
+                let base = this.costBase();
+                let target = player.ic.elements.max(1).log(base).plus(1).log(base);
+                target = target.plus(1).floor();
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].max(target);
+            },
+            tooltip() {return "1.02<sup>x<sup>1.04</sup></sup>"} ,
+            unlocked() {return player.pa.unlocked},
+            style: {'width':'135px','height':'135px'},
+           
+        },
+        63: {
+            title: "Neon",
+            costBase() {
+                let base = new Decimal(2.5);
+            
+            
+                return base;
+            },
+            cost(x=player[this.layer].buyables[this.id]) { // cost for buying xth buyable, can be an object if there are multiple currencies
+                let base = this.costBase();
+                let cost = Decimal.pow(base, Decimal.pow(base, x).sub(1));
+                return cost.floor()
+            },
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                let display = "Cost: " + formatWhole(data.cost) + " Elements."+"\n\
+                Amount: " + formatWhole(player[this.layer].buyables[this.id])+"\n\
+                Reduces base of the both 5th and 6th element.<br>Currently: -"+format(data.effect)+"."
+                return display;
+            },
+            effect() { // Effects of owning x of the items, x is a decimal
+                x=player[this.layer].buyables[this.id]
+    
+                    if (!x.gte(1)) return new Decimal(0)
+                    let eff = Decimal.plus(0.02, x.times(0.02))
+    
+            
+                    return eff;
+            },
+         
+            canAfford() {
+                return player.ic.elements.gte(tmp[this.layer].buyables[this.id].cost)},
+            buy() { 
+                cost = tmp[this.layer].buyables[this.id].cost
+                player.ic.elements = player.ic.elements.sub(cost)	
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].add(1)
+            },
+            buyMax() {
+                if (!this.unlocked || !this.canAfford()) return;
+                let base = this.costBase();
+                let target = player.ic.elements.max(1).log(base).plus(1).log(base);
+                target = target.plus(1).floor();
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].max(target);
+            },
+            style: {'width':'135px','height':'135px'},
+            unlocked() {return player.pa.unlocked},
+            tooltip() {return "0.02+x*0.02"} ,
+           
         },
     },
     tabFormat: {
@@ -1461,7 +1685,7 @@ if (getBuyableAmount("ic",23).gte(1)) player.ic.uniDimIILvl = player.ic.uniDimII
                   "blank",
                    ["row", [
                     ["column", [
-                        ["row", [["buyable", 21],["buyable", 22],["buyable", 23]]],
+                        ["row", [["buyable", 21],["buyable", 22],["buyable", 23],["buyable", 24],["buyable", 25]]],
                     ], {width: "15em"}],
                     ["column", [
                         ["row", [["buyable", 31],["buyable", 32],["buyable", 33]]],
@@ -1490,7 +1714,7 @@ if (getBuyableAmount("ic",23).gte(1)) player.ic.uniDimIILvl = player.ic.uniDimII
                       ["display-text", function() { return "You have <h3>"+format(player.ic.elements)+"</h3> Elements, which are dividing Exponent Coins and Orbs req by "+format(tmp.ic.eleEffect)+"."+(tmp.ic.eleEffect.gte("1e645")?" (SOFTCAPPED)":"") }],
                       "blank",
                       ["row", [["buyable", 41],["buyable", 42],["buyable", 43],["buyable", 44],["buyable", 45],["buyable", 46],["buyable", 47]]],
-                   
+                      ["row", [["buyable", 61],["buyable", 62],["buyable", 63],["buyable", 64],["buyable", 65],["buyable", 66],["buyable", 67]]],
                     "blank",	"blank",	"blank",	"blank",	"blank",	"blank",	"blank",	"blank",	"blank",
                        ,
                     ],
@@ -1507,6 +1731,7 @@ universeEffect() {
     let eff= Decimal.pow(player.ic.energy.plus(1),1.05)
  if (hasUpgrade("ic",23)) eff = eff.pow(1.7)
     if (getBuyableAmount("s",21)) eff = eff.pow(tmp.s.affinityEffect)
+        if (hasUpgrade("truck",11)) eff = eff.pow(2)
     return eff;
 },
 eleEffect() {
@@ -1577,7 +1802,7 @@ upgrades: {
                 
              
             let eff = player.points.plus(1).pow(0.005)
-       
+            if (player.truck.inTrucking.gte(1)) eff = eff.root(3)
             if (inChallenge("s",11)) eff = eff.root(2)
             return eff;
         },
@@ -1589,13 +1814,17 @@ upgrades: {
         title: "New Challenges",
         description: "Unlock Challenges. Also, divide exponent coins req by their own amount.",
         cost: new Decimal(1.5e8),
-   
+   formula() {
+    let formula = new Decimal(0.5)
+    if (hasUpgrade("pa",27)) formula = formula.add(1.5)
+    return formula;
+   },
    
     
         effect() {
                 
              
-            let eff = player.ex.points.plus(1).pow(0.5)
+            let eff = player.ex.points.plus(1).pow(tmp.ic.upgrades[16].formula)
        
          
             return eff;
@@ -1713,7 +1942,7 @@ upgrades: {
              
             let eff = player.ic.points.plus(1).pow(0.07)
             if (inChallenge("s",11)) eff = eff.root(2)
-
+                if (player.truck.inTrucking.gte(1)) eff = eff.root(3)
                 let softcap = new Decimal(tmp.ic.upgrades[this.id].softcapStart)
                 if (eff.gte(softcap)) eff = Decimal.pow(10,Decimal.log10(eff.div(softcap)).pow(5/6)).mul(softcap)
             return eff;
@@ -1769,7 +1998,7 @@ upgrades: {
                 
              
             let eff = player.points.plus(1).pow(0.3)
-       
+            if (player.truck.inTrucking.gte(1)) eff = eff.root(3)
             if (inChallenge("s",11)) eff = eff.root(2)
                 let softcap = new Decimal(tmp.ic.upgrades[this.id].softcapStart)
             if (eff.gte(softcap)) eff = Decimal.pow(10,Decimal.log10(eff.div(softcap)).pow(3/6)).mul(softcap)
@@ -1814,7 +2043,7 @@ upgrades: {
        
     },
     35: {
-        title: "Not Nice",
+        title: "Scaled to the Brim",
         description: "Cost scalings for the first 2 Exponent Buyables are reduced.",
         cost: new Decimal(1e89),
    
@@ -1914,6 +2143,7 @@ addLayer("o", {
     baseAmount() {return player.points}, // Get the current amount of baseResource
     type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     exponent() {let base = new Decimal(3)
+               if (inChallenge("pa",11)) return new Decimal(4)
   if (hasUpgrade("ic",36)) base = base.sub(1)
     if (hasUpgrade("s",25)) base = base.sub(0.5)
         return base;
@@ -1921,7 +2151,8 @@ addLayer("o", {
     base: 5,
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
-        if (inChallenge("s",11)) return new Decimal(1).times(tmp.s.cheeseburgerEff) 
+        if (player.truck.inTrucking.gte(1)) return new Decimal(0)
+
      if (getBuyableAmount("ic",13).gte(1)) mult = mult.div(tmp.ic.buyables[13].effect.first)
         if (hasUpgrade("ic",25)) mult = mult.div(tmp.ic.eleEffect)
         if (hasUpgrade("ic",31)) mult = mult.div(1e125)
@@ -1939,6 +2170,8 @@ resetsNothing() {return hasUpgrade("ic",36)},
          if (!player.o.unlocked) return new Decimal(1)
                 let eff = Decimal.pow(this.baseEff(), player.o.points.plus()).max(0);
          if (getBuyableAmount("ic",51).gte(1)) eff = eff.times(tmp.ic.buyables[51].effect.first)
+
+            if (hasUpgrade("pa",44)) eff = eff.pow(upgradeEffect("pa",44))
                 return eff;
             },
  
@@ -2000,9 +2233,11 @@ addLayer("p", {
 
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
+             if (inChallenge("pa",11)) return new Decimal(1)
         if (inChallenge("s",11)) return new Decimal(1).times(tmp.s.cheeseburgerEff) 
      if (getBuyableAmount("ic",43).gte(1)) mult = mult.add(1).pow(tmp.ic.buyables[43].effect.first)
         if (hasAchievement("ach",41)) mult = mult.times(600)
+            if (hasUpgrade("s",103)) mult = mult.times(upgradeEffect("s",103))
         return mult
     },
     passiveGeneration() { return (hasUpgrade("s", 14)?1:0) },
@@ -2039,10 +2274,22 @@ addLayer("p", {
             }
         },
     ],
+    update(diff) {
+        if (hasMilestone("pa", 3)) {
+            layers.p.buyables[11].buyMax();
+            layers.p.buyables[12].buyMax();
+            layers.p.buyables[13].buyMax();
+            layers.p.buyables[14].buyMax();
+            layers.p.buyables[15].buyMax();
+        }
+        if (hasUpgrade("s",103)) {
+              layers.p.buyables[16].buyMax();
+        }
 
+        },
    buyables: {
     11: {
-        title: "Egg",
+        title: "Poached Exponent",
         costBase() {
             let base = new Decimal(2);
             if (getBuyableAmount("s",12).gte(1)) base = base.sub(tmp.s.buyables[12].effect)
@@ -2092,7 +2339,7 @@ addLayer("p", {
         unlocked() {return player.p.unlocked},
         tooltip() {return "1.11<sup>x<sup>1.03</sup></sup>"} ,
     },12: {
-        title: "Pigs",
+        title: "Poached Exponent Base",
         costBase() {
             let base = new Decimal(2.5);
             if (getBuyableAmount("s",12).gte(1)) base = base.sub(tmp.s.buyables[12].effect)
@@ -2140,7 +2387,7 @@ addLayer("p", {
         tooltip() {return "0.02+x*0.02"} ,
     },
     13: {
-        title: "Birds",
+        title: "Poached Orbs",
         costBase() {
             let base = new Decimal(3);
             if (getBuyableAmount("s",12).gte(1)) base = base.sub(tmp.s.buyables[12].effect)
@@ -2188,7 +2435,7 @@ addLayer("p", {
         tooltip() {return "0.015+x*0.015"} ,
     },
     14: {
-        title: "Angry Birds",
+        title: "Poached Poachers",
         costBase() {
             let base = new Decimal(3.5);
             if (getBuyableAmount("s",12).gte(1)) base = base.sub(tmp.s.buyables[12].effect)
@@ -2236,7 +2483,7 @@ addLayer("p", {
         tooltip() {return "0.072+x*0.072"} ,
     },
     15: {
-        title: "Bad Piggies",
+        title: "Poached Computing",
         costBase() {
             let base = new Decimal(4);
             if (getBuyableAmount("s",12).gte(1)) base = base.sub(tmp.s.buyables[12].effect)
@@ -2286,7 +2533,59 @@ addLayer("p", {
         unlocked() {return hasUpgrade("s",24)},
         tooltip() {return "1.4<sup>x<sup>1.1</sup></sup>"} ,
     },
+     16: {
+        title: "Fast Fooder",
+        costBase() {
+            let base = new Decimal(5);
+
+        
+            return base;
+        },
+       cost(x=player[this.layer].buyables[this.id]) { // cost for buying xth buyable, can be an object if there are multiple currencies
+            let base = this.costBase();
+            let cost = Decimal.pow(base, Decimal.pow(base, x).sub(1));
+            return cost.floor()
+        },
+        display() { // Everything else displayed in the buyable button after the title
+            let data = tmp[this.layer].buyables[this.id]
+            let display = "Cost: " + formatWhole(data.cost) + " Poachers."+"\n\
+            Amount: " + formatWhole(player[this.layer].buyables[this.id])+"\n\
+            Raise Points gain in TMT's Mighty Cheeseburger. <br>Currently: ^"+format(data.effect.first)+"."
+            return display;
+        },
+        effect(x=player[this.layer].buyables[this.id]) { // Effects of owning x of the items, x is a decimal
+          
+            let eff = {}
+            if (x.gte(0)) eff.first = Decimal.pow(1.05, x.pow(1.03))
+            else eff.first = Decimal.pow(1/25, x.times(-1).pow(1.1))
+       
+        
+            if (x.gte(0)) eff.second = x.pow(0.8)
+            else eff.second = x.times(-1).pow(0.8).times(-1)
+        
+            return eff;
+        },
+     
+        canAfford() {
+            return player.p.points.gte(tmp[this.layer].buyables[this.id].cost)},
+        buy() { 
+            cost = tmp[this.layer].buyables[this.id].cost
+            player.p.points =  player.p.points.sub(cost)	
+            player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].add(1)
+        },
+        buyMax() {
+            if (!this.unlocked || !this.canAfford()) return;
+            let base = this.costBase();
+            let target = player.p.points.max(1).log(base).plus(1).log(base);
+            target = target.plus(1).floor();
+            player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].max(target);
+        },
+        style: {'width':'135px','height':'135px'},
+        unlocked() {return hasUpgrade("s",103)},
+        tooltip() {return "1.05<sup>x<sup>1.03</sup></sup>"} ,
+    },
    },
+   
     layerShown(){return player.ic.unlocked},
 
   
@@ -2313,16 +2612,21 @@ addLayer("s", {
         affinityIAmount: new Decimal(0),
         affinityIIAmount: new Decimal(0),
         affinityIIIAmount: new Decimal(0),
+      affinityIVAmount: new Decimal(0),
         expansionII: new Decimal(0),
         cheeseburgerCostPur2: new Decimal(0),
         cheeseburgerCostPur3: new Decimal(0),
         furtherPoints: new Decimal(0),
         furtherCoins: new Decimal(0),
+        intel: new Decimal(0),
+        amd: new Decimal(0),
+                expansionIII: new Decimal(0),
+                        expansionIV: new Decimal(0),
     }},
 
     color: "lime",
 		
-    requires: new Decimal("1e930"), // Can be a function that takes requirement increases into account
+    requires: new Decimal("1e990"), // Can be a function that takes requirement increases into account
     resource: "sectors", // Name of prestige currency
     baseResource: "points", // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
@@ -2334,6 +2638,7 @@ addLayer("s", {
 
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
+          if (player.truck.inTrucking.gte(1)) return new Decimal(0)
        if (hasAchievement("ach",42)) mult = mult.times(2)
         if (hasUpgrade("s",26)) mult = mult.times(upgradeEffect("s",26))
             if (hasAchievement("ach",44)) mult = mult.times(8)
@@ -2349,8 +2654,13 @@ addLayer("s", {
    
     gainExp() { // Calculate the exponent on main currency from bonuses
         exp = new Decimal(1)
-
+        if (hasUpgrade("s",33)) exp = exp.add(0.5)
         if (hasUpgrade("s",42)) exp = exp.add(0.5)
+            if (getBuyableAmount("s",15)) exp = exp.add(tmp.s.buyables[15].effect)
+                if (hasUpgrade("c",92)) exp = exp.add(0.1)
+                               if (hasUpgrade("c",82)) exp = exp.add(0.05)
+                                           if (hasUpgrade("c",72)) exp = exp.add(0.03)
+                                                    if (hasUpgrade("c",62)) exp = exp.add(0.03)
         return exp
     },
    
@@ -2358,15 +2668,15 @@ addLayer("s", {
 
     row: 2, // Row the layer is in on the tree (0 is the first row)
     branches: ["o","ex","p"],
-   /* hotkeys: [
+    hotkeys: [
         {
-            key:"O", description: "O: Reset for orbs", onPress() {
+            key:"S", description: "S: Reset for sectors", onPress() {
                 if (canReset(this.layer))
                     doReset(this.layer)
             }
         },
     ],
-*/
+
     doReset(resettingLayer) {
         let keep = [];
     
@@ -2374,6 +2684,7 @@ addLayer("s", {
         player.s.catchedBurgers = new Decimal(0);
         player.s.time = new Decimal(0);
         player.s.cheeseDuration = new Decimal(0);
+
         if (layers[resettingLayer].row > this.row) layerDataReset("s", keep)
     },
 cheeseBurgerDuration() {
@@ -2382,12 +2693,13 @@ cheeseBurgerDuration() {
 if (hasUpgrade("s",43)) duration = duration.add(0.33)
     if (hasUpgrade("wi",21)) duration = duration.add(upgradeEffect("wi",21))
         if (player.s.cheeseburgerCostPur2.gte(10)) duration = duration.add(tmp.s.clickables[32].effect)
+            if (player.pa.unlocked) duration = duration.add(1)
   return duration;
 },
 
 cheeseburgerEff() {
  let eff = new Decimal(10).add(tmp.s.clickables[33].effect).div(player.s.cheeseburgers.add(1))
-
+if (player.pa.unlocked) eff = eff.times(100)
  return eff;
 
 },
@@ -2404,7 +2716,7 @@ passiveGeneration() {
             content: ["main-display",
             "prestige-button",
             "resource-display", "blank",
-            ["display-text", () =>    (inChallenge("s",11)) ? "You have <h2>"+format(player.s.cheeseburgers)+"</h2> Cheeseburgers, translating to your layer multis being multiplied by <h2>"+format(tmp.s.cheeseburgerEff)+"</h2>.":""],
+            ["display-text", () =>    (inChallenge("s",11)) ? "You have <h2>"+format(player.s.cheeseburgers)+"</h2> Cheeseburgers, translating to your layer multis being multiplied (doesn't affect static layers) by <h2>"+format(tmp.s.cheeseburgerEff)+"</h2>.":""],
             
             "blank",
             "blank",
@@ -2422,7 +2734,7 @@ passiveGeneration() {
                    content: ["main-display",
                    "prestige-button",
                    "resource-display", 
-                   ["display-text", () =>    (inChallenge("s",11)) ? "You have <h2>"+format(player.s.cheeseburgers)+"</h2> Cheeseburgers, translating to your layer multis being multiplied by <h2>"+format(tmp.s.cheeseburgerEff)+"</h2>.":""],
+                   ["display-text", () =>    (inChallenge("s",11)) ? "You have <h2>"+format(player.s.cheeseburgers)+"</h2> Cheeseburgers, translating to your layer multis being multiplied (doesn't affect static layers) by <h2>"+format(tmp.s.cheeseburgerEff)+"</h2>.":""],
                    "blank",
                   "blank",
                   ["microtabs", "disk"],
@@ -2435,9 +2747,9 @@ passiveGeneration() {
                    content: ["main-display",
                    "prestige-button",
                    "resource-display", 
-                         ["display-text", () =>    (inChallenge("s",11)) ? "You have <h2>"+format(player.s.cheeseburgers)+"</h2> Cheeseburgers, translating to your layer multis being multiplied by <h2>"+format(tmp.s.cheeseburgerEff)+"</h2>.":""],"blank",
+                         ["display-text", () =>    (inChallenge("s",11)) ? "You have <h2>"+format(player.s.cheeseburgers)+"</h2> Cheeseburgers, translating to your layer multis being multiplied (doesn't affect static layers) by <h2>"+format(tmp.s.cheeseburgerEff)+"</h2>.":""],"blank",
                   "blank",
-                  ["row", [["buyable", 11],["buyable", 12],["buyable", 13],["buyable", 14]]],
+                  ["row", [["buyable", 11],["buyable", 12],["buyable", 13],["buyable", 14],["buyable", 15],["buyable", 16]]],
             ]
     
         },
@@ -2448,7 +2760,7 @@ passiveGeneration() {
                    "prestige-button",
                    "resource-display", "blank",
                   "blank",
-                  ["display-text", () =>    (inChallenge("s",11)) ? "You have <h2>"+format(player.s.cheeseburgers)+"</h2> Cheeseburgers, translating to your layer multis being multiplied by <h2>"+format(tmp.s.cheeseburgerEff)+"</h2>.":""],
+                  ["display-text", () =>    (inChallenge("s",11)) ? "You have <h2>"+format(player.s.cheeseburgers)+"</h2> Cheeseburgers, translating to your layer multis being multiplied (doesn't affect static layers) by <h2>"+format(tmp.s.cheeseburgerEff)+"</h2>.":""],
                   ["display-image", () =>   (true) ? "TMT.png":""],
 
                   ["display-text", function() { return "Oh no! He has a cheeseburger! He is laughing at you and eating his cheeseburger." }],
@@ -2475,7 +2787,7 @@ passiveGeneration() {
                   "blank",
                  
 
-                  ["display-text", function() { return "All layer multiplies are at 1, but exponents are unaffected.<br>There is a layer effect that starts based on Cheeseburgers. With no cheeseburgers, the effect is at 10, but you earn TMT's Cheeseburgers Eaten every 0.5 seconds, which negates the effect (can be nerfed via features).<br>You can catch cheeseburgers, with a cost that exponentially increases over time.<br>Base points gain is disabled.<br>Upgrades related to boosting points and exponent points gain is square rooted.<br>Points is square rooted." }],
+                  ["display-text", function() { return "All layer multipliers are at 1, but exponents are unaffected.<br>There is a layer effect that starts based on Cheeseburgers. With no cheeseburgers, the effect is at 10, but you earn TMT's Cheeseburgers Eaten every 0.5 seconds, which negates the effect (can be nerfed via features).<br>You can catch cheeseburgers, with a cost that exponentially increases over time.<br>Base points gain is disabled.<br>Upgrades related to boosting points and exponent points gain is square rooted.<br>Points is square rooted." }],
                   "blank","blank",
                 
             ]
@@ -2492,7 +2804,7 @@ passiveGeneration() {
                   ["display-text", () =>    (player.s.affinityPoints.gte(375)) ? "After 375 Affinity Points, Affinity Effect 2 is raised "+format(tmp.s.affEffect2Power)+"!":""],
                   "blank","blank",
                   ["raw-html", function() {return "<small style='animation: affinity 9s infinite;'>Affinity Point generation: +"+format(tmp.s.affinityGeneration)+"/s </small>"}], "blank",
-                  ["row", [["buyable", 21],["buyable", 22],["buyable", 23]]],
+                  ["row", [["buyable", 21],["buyable", 22],["buyable", 23],["buyable",24]]],
             ]
     
         },
@@ -2511,17 +2823,166 @@ passiveGeneration() {
             ]
     
         },
+        "CPU": {
+            buttonStyle() { return {'border-color': 'green'} },
+            unlocked() {return player.pa.unlocked},
+                   content: ["main-display",
+                   "prestige-button",
+                   "resource-display", 
+                 
+                  "blank",
+                  ["row", [["clickable", 51],["clickable", 52]]],
+                  "blank",
+                  "blank",
+                  "blank",
+                  ["row", [["clickable", 61]]],
+            ]
+    
+        },
+        "CPU Rewards": {
+            buttonStyle() { return {'border-color': 'green'} },
+            unlocked() {return player.pa.unlocked},
+                   content: ["main-display",
+                   "prestige-button",
+                   "resource-display", 
+                   "blank",
+                        ["display-text", function() { return "<h2>Intel:</h2>" }],
+                   ["display-text", function() { return "<b>Pentium Rewards:</b>" }],
+                   "blank",
+                   ["display-text", function() { return "Corruption cost is rooted by "+format(tmp.s.pentiumEffect)+"." }],
+                  "blank",
+                  ["display-text", function() { return "Multiply Base Points by "+format(tmp.s.pentiumEffect2)+"x (effect increased based on Points, formula is √^8(Points<sup>0.05</sup>)+1." }],
+                  "blank",
+                  ["display-text", () =>    (player.s.intel.gte(1)) ? "<b>Pentium Pro Rewards:</b>":""],
+                  "blank",
+                  ["display-text", () =>    (player.s.intel.gte(1)) ? "Corruption's effect is multiplied by "+format(tmp.s.pentiumProEffect)+"x.":""],
+                  "blank",
+                  ["display-text", () =>    (player.s.intel.gte(1)) ? "Add the first Pentium's effect by +"+format(tmp.s.pentiumPro2Effect)+".":""],
+                  "blank",
+                  ["display-text", () =>    (player.s.intel.gte(2)) ? "<b>Pentium II Rewards:</b>":""],
+                  "blank",
+                  ["display-text", () =>    (player.s.intel.gte(2)) ? "Multiplies Pentium Pro's first effect by "+format(tmp.s.pentiumIIEffect)+"x (effect increased based on Points, formula is √^32(Points<sup>0.01</sup>)+1.":""],
+                  "blank",
+                  ["display-text", () =>    (player.s.intel.gte(3)) ? "<b>Celeron Rewards:</b>":""],
+                  "blank",
+                  ["display-text", () =>    (player.s.intel.gte(3)) ? "Points softcap starts ^"+format(tmp.s.celeronEffect)+" later.":""],
+                  "blank",
+                  ["display-text", () =>    (player.s.intel.gte(4)) ? "<b>Xeon Rewards:</b>":""],
+                  "blank",
+                  ["display-text", () =>    (player.s.intel.gte(4)) ? "Adds +"+format(tmp.s.xeonEffect)+" to Pentium Pro's effect. (effect increased based on Base Points, formula is √^32(BasePoints<sup>0.002</sup>)":""],
+                  "blank",
+                  ["display-text", () =>    (player.s.intel.gte(5)) ? "<b>Pentium III Rewards:</b>":""],
+                  "blank",
+                  ["display-text", () =>    (player.s.intel.gte(5)) ? "Raises elements softcap by ^"+format(tmp.s.pentiumIIIEffect)+". (effect increased based on Points, formula is √^96(log10(Points<sup>0.002</sup>))":""],
+             "blank",
+                  ["display-text", () =>    (player.s.intel.gte(6)) ? "<b>Pentium IV Rewards:</b>":""],
+                  "blank",
+                  ["display-text", () =>    (player.s.intel.gte(6)) ? "Reduces base of Hydrogen by -"+format(tmp.s.pentiumIVEffect)+". ":""],
+                    "blank",
+                  ["display-text", () =>    (player.s.intel.gte(7)) ? "<b>Itanium Rewards:</b>":""],
+                  "blank",
+                  ["display-text", () =>    (player.s.intel.gte(7)) ? "Increases Further-Exponent Coin gain (effect increased based on Affinity Points, formula is AffinityPoints<sup>0.2</sup>+1 "+format(tmp.s.itaniumEffect)+"x. ":""],
+                  "blank",
+                   ["display-text", function() { return "<h2>AMD:</h2>" }],
+                  ["display-text", () =>    (player.s.amd.gte(1)) ? "<b>Am9080 Rewards:</b>":""],
+                   "blank",
+                    ["display-text", () =>    (player.s.amd.gte(1)) ? "Further-Exponent Points generation is boosted by "+format(tmp.s.am9080Effect)+"x.":""],
+                     "blank",
+                    ["display-text", () =>    (player.s.amd.gte(2)) ? "Universal Shift's effect is raised by ^"+format(tmp.s.am286Effect)+".":""],
+                ]
+    
+        },
     },
+   pentiumEffect() {
+     if (!player.pa.unlocked) return new Decimal(1)
+     let eff = new Decimal(2)
+     if (player.s.intel.gte(1)) eff = eff.add(tmp.s.pentiumPro2Effect)
+        if (hasUpgrade("pa",11)) eff = eff.times(1.5)
+            if (hasUpgrade("pa",41)) eff = eff.times(2)
+     return eff;
+   },
+    am9080Effect() {
+     if (!hasChallenge("pa",11)) return new Decimal(1)
+     let eff = new Decimal(1.8)
+     return eff;
+   },
+    am286Effect() {
+     if (!hasChallenge("pa",11)) return new Decimal(1)
+     let eff = new Decimal(3125)
+     return eff;
+   },
+   pentiumEffect2() {
+     if (!player.pa.unlocked) return new Decimal(1)
+    let eff = new Decimal(1).times(player.points.pow(0.05).root(8).add(1))
+    return eff;
+  },
+  pentiumProEffect() {
+    if (!player.pa.unlocked) return new Decimal(1)
+    let eff = new Decimal(16)
+    if (player.s.intel.gte(2)) eff = eff.times(tmp.s.pentiumIIEffect)
+  
+    return eff;
+  },
+  pentiumPro2Effect() {
+     if (!player.pa.unlocked) return new Decimal(0)
+    let eff = new Decimal(0.1)
+    if (player.s.intel.gte(4)) eff = eff.add(tmp.s.xeonEffect)
+    return eff;
+  },
+  pentiumIIEffect() {
+     if (!player.pa.unlocked) return new Decimal(1)
+    let eff = new Decimal(4).times(player.points.pow(0.01).root(32).add(1))
+
+    return eff;
+  },
+  celeronEffect() {
+     if (!player.pa.unlocked) return new Decimal(1)
+    let eff = new Decimal(1.0002)
+  if (hasUpgrade("pa",16)) eff = eff.add(0.0018)
+    if (hasUpgrade("pa",35)) eff= eff.add(0.0982)
+    return eff;
+  },
+  xeonEffect() {
+     if (!player.pa.unlocked) return new Decimal(0)
+    let eff = new Decimal(0.1).add(getBasePointGen().pow(0.002).root(32))
+
+    return eff;
+  },
+  pentiumIIIEffect() {
+     if (!player.pa.unlocked) return new Decimal(1)
+    let eff = new Decimal(1).add(player.points.add(1).pow(0.002).root(96).log10())
+
+    return eff;
+  },
+   pentiumIVEffect() {
+     if (!player.pa.unlocked) return new Decimal(0)
+  let eff = new Decimal(0.1)
+ 
+   if (hasUpgrade("pa",41)) eff = eff.times(1.5)
+    return eff;
+  },
+    itaniumEffect() {
+     if (!player.pa.unlocked) return new Decimal(0)
+    let eff = new Decimal(1).times(player.s.affinityPoints.pow(0.2).add(1))
+ 
+
+    return eff;
+  },
     affEffect2Power() {
         let eff = player.s.affinityPoints.log10().sub(1.57).times(1.05)
+     
         return eff;
     },
     furtherEffect() {
         let eff = player.s.furtherPoints.pow(7).add(1)
+        if (hasUpgrade("pa",17)) eff = eff.pow(2)
         return eff;
     },
     furtherPointGen() {
         let eff = player.s.furtherCoins.div(10)
+        if (player.s.amd.gte(1)) eff = eff.times(tmp.s.am9080Effect)
+            if (hasUpgrade("pa",37)) eff = eff.times(500)
+            if (player.s.intel.gte(7)) eff = eff.times(tmp.s.itaniumEffect)
         return eff; 
     },
     challenges: {
@@ -2530,18 +2991,18 @@ passiveGeneration() {
             challengeDescription: "TMT is eating his cheeseburger and laughs you as you try to fix the errors shown in Console. See another tab to view penalties.",
            
           goal(){
-           return new Decimal("1e75000");
+           return new Decimal("1e100000");
                 
             
             },
            
-            rewardDescription: "Unlock a new layer: Pashtocha.",
+            rewardDescription: "Unlock Bifurther-Exponents and The Candy Tree. Gives a boost to pre-Pashtocha layers.",
          
         },
      
     },
     affinityGeneration() {
-    return new Decimal(player.s.affinityIAmount.times(player.s.affinityIIAmount.add(1).times(player.s.affinityIIIAmount.add(1)))).div(tmp.s.affinityEffect2).times(tmp.s.affinityGenMult)
+    return new Decimal(player.s.affinityIAmount.times(player.s.affinityIIAmount.add(1).times(player.s.affinityIIIAmount.add(1).times(player.s.affinityIVAmount.add(1))))).div(tmp.s.affinityEffect2).times(tmp.s.affinityGenMult)
     },
 affinityGenMult() {
 
@@ -2560,7 +3021,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
             player.s.cheeseDuration = player.s.cheeseDuration.add(diff);
             player.s.time = player.s.time.add(diff);
             console.error("Uncaught TypeError: Cannot read properties of undefined (reading 'cheeseburger')");
-           player.s.pointsInCheeseburger = player.points
+           player.s.pointsInCheeseburger = player.s.pointsInCheeseburger.max(player.points)
            if (hasUpgrade("s",51)&&layers.s.clickables[21].canClick()) layers.s.clickables[21].onClick();
             /* throw function freezes the game, so console.error is used instead*/
         }
@@ -2586,10 +3047,25 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
  
  
     }
+   if (hasUpgrade("pa", 47)) {
+         
+        if (layers.s.clickables[42].canClick()) layers.s.clickables[42].onClick();
+ 
+ 
+    }
        if (inChallenge("s", 11)) tmp.s.cheeseBurgerDuration = tmp.s.cheeseBurgerDuration.sub(diff).max(0)
       player.s.affinityPoints = player.s.affinityPoints.plus(tmp.s.affinityGeneration.div(20))
 
        player.s.furtherPoints = player.s.furtherPoints.plus(tmp.s.furtherPointGen.div(20))
+   if (hasUpgrade("pa", 37)) {
+         
+      layers.s.buyables[21].buyMax();
+   layers.s.buyables[22].buyMax();
+     layers.s.buyables[23].buyMax();
+       layers.s.buyables[24].buyMax();
+ 
+    }
+  
     },
     buyables: {
         11: {
@@ -2641,7 +3117,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
             },
             style: {'width':'135px','height':'135px'},
             unlocked() {return hasUpgrade("s",27)},
-            tooltip() {return "1.14<sup>x<sup>1.036/sup></sup>"} ,
+            tooltip() {return "1.14<sup>x<sup>1.036/sup>"} ,
         },
         12: {
             title: "DDRx Level (Double Data Rate)",
@@ -2741,11 +3217,109 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
             unlocked() {return hasUpgrade("s",64)},
             tooltip() {return "1.5<sup>x<sup>1.2/sup></sup>"} ,
         },
+          14: {
+            title: "CPU (Central Processing Unit) Threads",
+            costBase() {
+                let base = new Decimal(2.15);
+            
+            
+                return base;
+            },
+            cost(x=player[this.layer].buyables[this.id]) { // cost for buying xth buyable, can be an object if there are multiple currencies
+                let base = this.costBase();
+                let cost = Decimal.pow(base, Decimal.pow(base, x).sub(1));
+                return cost.floor()
+            },
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                let display = "Cost: " + formatWhole(data.cost) + " Sectors."+"\n\
+                Amount: " + formatWhole(player[this.layer].buyables[this.id])+"\n\
+                Points softcap starts later. <br>Currently: ^"+format(data.effect.first)+"."
+                return display;
+            },
+            effect(x=player[this.layer].buyables[this.id]) { // Effects of owning x of the items, x is a decimal
+              
+                let eff = {}
+                if (x.gte(0)) eff.first = Decimal.pow(1.01, x.pow(1.01))
+                else eff.first = Decimal.pow(1/25, x.times(-1).pow(1.1))
+           
+            
+                if (x.gte(0)) eff.second = x.pow(0.8)
+                else eff.second = x.times(-1).pow(0.8).times(-1)
+            
+                return eff;
+            },
+            canAfford() {
+                return player.s.points.gte(tmp[this.layer].buyables[this.id].cost)},
+            buy() { 
+                cost = tmp[this.layer].buyables[this.id].cost
+                player.s.points =  player.s.points.sub(cost)	
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].add(1)
+            },
+            buyMax() {
+                if (!this.unlocked || !this.canAfford()) return;
+                let base = this.costBase();
+                let target = player.s.points.max(1).log(base).plus(1).log(base);
+                target = target.plus(1).floor();
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].max(target);
+            },
+            style: {'width':'135px','height':'135px'},
+            unlocked() {return hasUpgrade("pa",31)},
+            tooltip() {return "1.01<sup>x<sup>1.01</sup>"} ,
+        },
+        15: {
+            title: "Sector Intercept",
+            costBase() {
+                let base = new Decimal(2.2);
+            
+            
+                return base;
+            },
+           cost(x=player[this.layer].buyables[this.id]) { // cost for buying xth buyable, can be an object if there are multiple currencies
+                let base = this.costBase();
+                let cost = Decimal.pow(base, Decimal.pow(base, x).sub(1));
+                return cost.floor()
+            },
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                let display = "Cost: " + formatWhole(data.cost) + " Sectors."+"\n\
+                Amount: " + formatWhole(player[this.layer].buyables[this.id])+"\n\
+                Add sector gain exp <br>Currently: +"+format(data.effect)+"."
+                return display;
+            },
+            effect() { // Effects of owning x of the items, x is a decimal
+                x=player[this.layer].buyables[this.id]
+    
+                    if (!x.gte(1)) return new Decimal(0)
+                    let eff = Decimal.plus(0.01, x.times(0.015))
+    
+            
+                    return eff;
+            },
+         
+            canAfford() {
+                return player.s.points.gte(tmp[this.layer].buyables[this.id].cost)},
+            buy() { 
+                cost = tmp[this.layer].buyables[this.id].cost
+                player.s.points =  player.s.points.sub(cost)	
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].add(1)
+            },
+            buyMax() {
+                if (!this.unlocked || !this.canAfford()) return;
+                let base = this.costBase();
+                let target = player.s.points.max(1).log(base).plus(1).log(base);
+                target = target.plus(1).floor();
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].max(target);
+            },
+            style: {'width':'135px','height':'135px'},
+            unlocked() {return hasUpgrade("c",91)},
+            tooltip() {return "0.01+x*0.015"} ,
+        },
         21: {
             title: "Affinity Dimension I",
           
           costBase() {
-                let base = new Decimal("1e430");
+                let base = new Decimal("1e535");
             
             
                 return base;
@@ -2764,7 +3338,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
             
          
             canAfford() {
-                return player.points.gte(tmp[this.layer].buyables[this.id].cost)&&inChallenge("s",11)},
+                return player.points.gte(tmp[this.layer].buyables[this.id].cost)&&(inChallenge("s",11)||hasMilestone("pa",4))},
             buy() { 
                 cost = tmp[this.layer].buyables[this.id].cost
                 player.points = player.points.sub(cost)	
@@ -2774,9 +3348,10 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
             buyMax() {
                 if (!this.unlocked || !this.canAfford()) return;
         
-                let target = player.points.max(1).log("1e90");
+                let target = player.points.max(1).log("1e50");
                 target = target.plus(1).floor();
                 player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].max(target);
+                     player.s.affinityIAmount = player.s.affinityIAmount.max(target)
             },
             style: {'height':'135px'},
             unlocked() {return hasUpgrade("s",53)},
@@ -2786,7 +3361,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
             title: "Affinity Dimension II",
           
           costBase() {
-                let base = new Decimal("1e430");
+                let base = new Decimal("1e535");
             
             
                 return base;
@@ -2805,7 +3380,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
             
          
             canAfford() {
-                return player.points.gte(tmp[this.layer].buyables[this.id].cost)&&inChallenge("s",11)},
+                return player.points.gte(tmp[this.layer].buyables[this.id].cost)&&(inChallenge("s",11)||hasMilestone("pa",4))},
             buy() { 
                 cost = tmp[this.layer].buyables[this.id].cost
                 player.points = player.points.sub(cost)	
@@ -2815,9 +3390,10 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
             buyMax() {
                 if (!this.unlocked || !this.canAfford()) return;
         
-                let target = player.points.max(1).log("1e90");
+                let target = player.points.max(1).log("1e50");
                 target = target.plus(1).floor();
                 player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].max(target);
+                     player.s.affinityIIAmount = player.s.affinityIIAmount.max(target)
             },
             style: {'height':'135px'},
             unlocked() {return hasAchievement("ach",52)},
@@ -2827,7 +3403,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
             title: "Affinity Dimension III",
           
           costBase() {
-                let base = new Decimal("1e430");
+                let base = new Decimal("1e535");
             
             
                 return base;
@@ -2846,7 +3422,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
             
          
             canAfford() {
-                return player.points.gte(tmp[this.layer].buyables[this.id].cost)&&inChallenge("s",11)},
+                return player.points.gte(tmp[this.layer].buyables[this.id].cost)&&(inChallenge("s",11)||hasMilestone("pa",4))},
             buy() { 
                 cost = tmp[this.layer].buyables[this.id].cost
                 player.points = player.points.sub(cost)	
@@ -2856,12 +3432,55 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
             buyMax() {
                 if (!this.unlocked || !this.canAfford()) return;
         
-                let target = player.points.max(1).log("1e90");
+                let target = player.points.max(1).log("1e50");
                 target = target.plus(1).floor();
                 player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].max(target);
+                      player.s.affinityIIIAmount = player.s.affinityIIIAmount.max(target)
             },
             style: {'height':'135px'},
             unlocked() {return hasAchievement("ach",52)},
+          
+        },
+        24: {
+            title: "Affinity Dimension IV",
+          
+          costBase() {
+                let base = new Decimal("1e800");
+            
+            
+                return base;
+            },
+            cost(x=player[this.layer].buyables[this.id]) { // cost for buying xth buyable, can be an object if there are multiple currencies
+                let base = this.costBase();
+                let cost = Decimal.pow("1e100", x.add(10.75));
+                return cost.floor()
+            },
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                let display = "Cost: " + formatWhole(data.cost) + " Points"+"\n\
+                Multiplies the effect of a previous dimension."
+                return display;
+            },
+            
+         
+            canAfford() {
+                return player.points.gte(tmp[this.layer].buyables[this.id].cost)&&(inChallenge("s",11)||hasMilestone("pa",4))},
+            buy() { 
+                cost = tmp[this.layer].buyables[this.id].cost
+                player.points = player.points.sub(cost)	
+                player.s.affinityIVAmount = player.s.affinityIVAmount.add(1)
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].add(1)
+            },
+            buyMax() {
+                if (!this.unlocked || !this.canAfford()) return;
+        
+                let target = player.points.max(1).log("1e50");
+                target = target.plus(1).floor();
+                player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].max(target);
+                      player.s.affinityIVAmount = player.s.affinityIVAmount.max(target)
+            },
+            style: {'height':'135px'},
+            unlocked() {return hasUpgrade("pa",32)},
           
         },
         31: {
@@ -2871,6 +3490,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
                 let base = new Decimal(1024);
             
          if (hasUpgrade("s",94)) base = base.div(upgradeEffect("s",94))
+            if (hasUpgrade("pa",36)) base = base.div(18)
                 return base;
             },
            
@@ -2917,9 +3537,9 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
 
                    "blank",
                    ["display-text",
-                    function() {return "Tip: Spending your sectors will expand your partition's storage by x2.5." },
+                    function() {return "Expanding sector capacity by spending Sectors increases Partition size by x2.5." },
                         {}],
-                        ["row", [["clickable", 11],["clickable", 41]]],
+                        ["row", [["clickable", 11],["clickable", 41],["clickable", 42]]],
                     "blank",
                   
                 ]
@@ -2951,13 +3571,14 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
          if (!hasAchievement("ach",26)) return new Decimal(1)
                 let eff = Decimal.pow(this.baseEff(), player.s.corruption.plus()).max(0);
               if (getBuyableAmount("s",11).gte(1)) eff = eff.times(tmp.s.buyables[11].effect.first)
+                if (player.s.intel.gte(1)) eff = eff.times(tmp.s.pentiumProEffect)
                 return eff;
             },
 
     affinityEffect() {
            
                        let eff = Decimal.pow(1.001, player.s.affinityPoints.plus()).max(0);
-               
+                    if (hasUpgrade("c",81)) eff = eff.pow(1.05)
                        return eff;
                    },
 
@@ -2967,7 +3588,9 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
         let eff = Decimal.pow(1.05, player.s.affinityPoints.plus()).max(0);
  if (hasUpgrade("s",61)) eff = eff.root(2)
  if (player.s.affinityPoints.gte(375)) eff = eff.pow(tmp.s.affEffect2Power)
-   
+   if (hasUpgrade("pa",32)) eff = eff.root(2)
+
+    
         return eff;
     },
 
@@ -3099,13 +3722,17 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
         effect() {
                 
              
-            let eff = player.ex.points.plus(1).pow(0.2)
+       let eff = player.ex.points.plus(1).pow(tmp.s.upgrades[26].formula)
        
          
             return eff;
         },
         effectDisplay() { return format(tmp.s.upgrades[26].effect)+"x" },
-      
+      formula(){ 
+        let formula = new Decimal(0.2)
+        if (hasUpgrade("pa",24)) formula = formula.times(10)
+            return formula;
+      },
         tooltip() {return "ExpCoins+1<sup>0.2</sup>"},
         unlocked() {return hasUpgrade("s",25)},
   
@@ -3146,7 +3773,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     },
     33: {
         title: "Btrfs",
-        description: "Autobuy Partitions and they cost nothing.",
+        description: "Autobuy Partitions and they cost nothing and Sector exp+0.5",
         cost: new Decimal(60000),
       
         unlocked() {return hasUpgrade("s",32)},
@@ -3182,7 +3809,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     36: {
         title: "UDF",
         description: "Unlocks a new element and is automated.",
-        cost: new Decimal(1e14),
+        cost: new Decimal(5e16),
    
        
         unlocked() {return hasUpgrade("s",53)}
@@ -3191,13 +3818,13 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     37: {
         title: "VFAT",
         description: "Exponent Coin generation softcap starts later based on Points.",
-        cost: new Decimal(3e14),
+        cost: new Decimal(1e17),
         effect() {
                 
              
-            let eff = player.points.log10().root(3).plus(1)
-       
-         
+            if (!hasUpgrade("pa",42)) eff = player.points.add(1).log10().root(3).plus(1)
+         if (hasUpgrade("pa",42)) eff = player.points.add(1).log10().plus(1)
+          if (hasUpgrade("pa",34)) eff = eff.pow(5)
             return eff;
         },
         effectDisplay() { return format(tmp.s.upgrades[37].effect)+"x" },
@@ -3243,7 +3870,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     44: {
         title: "Big Mac",
         description: "Unlock a new Sector buyable and Exponent Coins gain is increased by x1e12 but only in the challenge.",
-        cost: new Decimal("1e350"),
+        cost: new Decimal("1e330"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3254,7 +3881,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     45: {
         title: "Undisclosure",
         description: "Gain more points based on Exponent Coins but only in the challenge.",
-        cost: new Decimal("1e377"),
+        cost: new Decimal("1e350"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3273,7 +3900,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     46: {
         title: "Cheeseburger Nirval",
         description: "Catching Cheeseburger cost increase^^0.8, and unlocks Replicated Cheeseburgers",
-        cost: new Decimal("1e392"),
+        cost: new Decimal("1e354"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3284,7 +3911,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     51: {
         title: "Autocatcher",
         description: "You will automatically catch TMT's Cheeseburger, and multiply Partition bulk buy by 100.",
-        cost: new Decimal("1e395"),
+        cost: new Decimal("1e355"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3295,7 +3922,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     52: {
         title: "Genius Sheep",
         description: "While in TMT's Mighty Cheeseburger, Exponent Coins req is reduced even more.",
-        cost: new Decimal("1e415"),
+        cost: new Decimal("1e358"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3306,18 +3933,18 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     53: {
         title: "Follow the Midnight Train",
         description: "Unlock Affinity Dimensions.",
-        cost: new Decimal("1e430"),
+        cost: new Decimal("1e370"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
 
-        unlocked() {return hasUpgrade("s",72)&&inChallenge("s",11)}
+        unlocked() {return hasUpgrade("s",52)&&inChallenge("s",11)}
   
     },
     54: {
         title: "Exponential Corruption",
         description: "Each Sector upgrade purchased raises Points gain.",
-        cost: new Decimal("1e530"),
+        cost: new Decimal("1e500"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3340,7 +3967,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     55: {
         title: "Willy Rootfile",
         description: "Willy Cookies gain is multiplied based on your Base Points.",
-        cost: new Decimal("1e580"),
+        cost: new Decimal("1e530"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3360,7 +3987,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     56: {
         title: "Cheeseburger Breakdown",
         description: "Cheeseburger Cost is automated, and unlock a new set of Cheeseburger Buyables.",
-        cost: new Decimal("1e580"),
+        cost: new Decimal("1e530"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3371,7 +3998,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     61: {
         title: "Affinity Stronger",
         description: "Weakens the second Affinity effect slightly.",
-        cost: new Decimal("1e580"),
+        cost: new Decimal("1e530"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3382,7 +4009,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     62: {
         title: "Blue Screen of Death",
         description: "Points gain is also boosted by Affinity's effect.",
-        cost: new Decimal("1e590"),
+        cost: new Decimal("1e540"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3421,7 +4048,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
         currencyLayer: "s",
         effect() {
                  
-            let eff = player.points.log10().log10().root(32)
+            let eff = player.points.max(1).add(1).log10().log10().root(32)
         
          
             return eff;
@@ -3455,7 +4082,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     71: {
         title: "NFS",
         description: "Boost Sectors gain based on points in TMT's Cheeseburger.",
-        cost: new Decimal(3e14),
+        cost: new Decimal(1e17),
         effect() {
                 
              
@@ -3483,7 +4110,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     91: {
         title: "NTLDR is missing",
         description: "Unlock Further-Exponent, and autobuy Partition II and its incrementing is increased based on your Sectors.",
-        cost: new Decimal("1e1017"),
+        cost: new Decimal("1e1019"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3533,7 +4160,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
                  
             let eff = player.s.pointsInCheeseburger.log10().root(8).add(1)
         
-         
+           if (hasUpgrade("pa",43)) eff = eff.pow(2)
             return eff;
         },
         effectDisplay() { return "/"+format(tmp.s.upgrades[94].effect) },
@@ -3585,7 +4212,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     102: {
         title: "Operating System not found",
         description: "Unlock a new row of Cheeseburger upgrades.",
-        cost: new Decimal("1e2721"),
+        cost: new Decimal("1e2725"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3593,10 +4220,70 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
         unlocked() {return hasUpgrade("s",101)&&inChallenge("s",11)}
   
     },
+     103: {
+        title: "Disk error",
+        description: "Unlock a new Poacher buyable, is automated and Poachers multiply their own gain.",
+        cost: new Decimal("1e4500"),
+        currencyDisplayName: "points in Steal TMT's Cheeseburger",
+        currencyInternalName: "pointsInCheeseburger",
+        currencyLayer: "s",
+         effect() {
+                 
+            let eff = player.p.points.pow(0.02).add(1)
+        
+         
+            return eff;
+        },
+        effectDisplay() { return +format(tmp.s.upgrades[103].effect)+"x" },
+        tooltip() {return "Poachers<sup>0.02</sup>+1"} ,
+        unlocked() {return hasMilestone("pa",7)&&inChallenge("s",11)}
+  
+    },
+     104: {
+        title: "Remove disks or other media",
+        description: "Raise points by 1.05 while trucking up.",
+        cost: new Decimal("1e5100"),
+        currencyDisplayName: "points in Steal TMT's Cheeseburger",
+        currencyInternalName: "pointsInCheeseburger",
+        currencyLayer: "s",
+        
+        unlocked() {return hasMilestone("pa",7)&&inChallenge("s",11)}
+  
+    },
+      105: {
+        title: "Reboot and Select Proper Boot Device",
+        description: "Triple Pashtocha gains and unlock a new set of Cookie upgrades.",
+        cost: new Decimal("1e5700"),
+        currencyDisplayName: "points in Steal TMT's Cheeseburger",
+        currencyInternalName: "pointsInCheeseburger",
+        currencyLayer: "s",
+        
+        unlocked() {return hasMilestone("pa",7)&&inChallenge("s",11)}
+  
+    },
+     106: {
+        title: "DISK BOOT FAILURE - INSERT SYSTEM DISK AND PRESS ENTER",
+        description: "Orbs multiply Pashtocha gain.",
+        cost: new Decimal("1e6900"),
+        currencyDisplayName: "points in Steal TMT's Cheeseburger",
+        currencyInternalName: "pointsInCheeseburger",
+        currencyLayer: "s",
+                 effect() {
+                 
+            let eff = player.o.points.pow(0.5).add(1)
+        
+         
+            return eff;
+        },
+        effectDisplay() { return +format(tmp.s.upgrades[106].effect)+"x" },
+        tooltip() {return "Orbs<sup>0.5</sup>+1"} ,
+        unlocked() {return hasMilestone("pa",7)&&inChallenge("s",11)}
+  
+    },
     47: {
         title: "Intel",
         description: "Raise Points by 1.1.",
-        cost: new Decimal("1e2723"),
+        cost: new Decimal("1e2727"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3607,7 +4294,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     57: {
         title: "AMD",
         description: "Raise Points by another 1.1.",
-        cost: new Decimal("1e3003"),
+        cost: new Decimal("1e3007"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3618,7 +4305,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     67: {
         title: "Nvidia",
         description: "Raise Points by yet another 1.1.",
-        cost: new Decimal("1e3315"),
+        cost: new Decimal("1e3320"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3629,7 +4316,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     97: {
         title: "Qualcomm",
         description: "Raise Points by fourth another 1.1 and unlock Pashtocha.",
-        cost: new Decimal("1e3663"),
+        cost: new Decimal("1e3667"),
         currencyDisplayName: "points in Steal TMT's Cheeseburger",
         currencyInternalName: "pointsInCheeseburger",
         currencyLayer: "s",
@@ -3693,6 +4380,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
         if (getBuyableAmount("p",15).gte(1)) partition = partition.times(tmp.p.buyables[15].effect.first)
 
             if (hasUpgrade("s",72)) partition = partition.times(tmp.s.clickables[41].effect)
+                  if (hasUpgrade("pa",47)) partition = partition.times(tmp.s.clickables[42].effect)
            return partition;
 
         },
@@ -3712,7 +4400,8 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
                 
             if (player.s.corruption.gte(18)) cost = cost.times(player.s.corruption.pow(player.s.corruption.div(5).max(1).pow(player.s.corruption.sub(17).div(20)))).max(1).add(1)
                 if (player.s.corruption.gte(23)) cost = cost.times(player.s.corruption.pow(player.s.corruption.div(5).max(1).pow(player.s.corruption.sub(22).div(5)))).max(1).add(1)
-              return cost.times(player.s.corruption.add(1));
+            if (player.pa.unlocked) cost = cost.root(tmp.s.pentiumEffect)
+                    return cost.times(player.s.corruption.add(1));
 
         },
         canClick() {
@@ -3766,7 +4455,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
     31: {
         title() {return "Cheeseburger Cost"},
         cost() {
-              let cost = new Decimal("1e390")
+              let cost = new Decimal("1e350")
               if (player.s.cheeseburgerCostPur.gte(80)) cost = cost.pow(player.s.cheeseburgerCostPur.add(1).div(50).times(player.s.cheeseburgerCostPur.sub(79)))
               return cost.times(player.s.cheeseburgerCostPur.pow(100).add(1));
 
@@ -3877,18 +4566,108 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
        
         player.s.expansionII = player.s.expansionII.add(tmp.s.clickables[41].increments)
         },
-
+   unlocked() {return hasUpgrade("s",72)},
        
         display() {return "Cost: "+format(this.cost())+" sectors<br>Increases capacity and increment of previous partition by x"+format(tmp.s.clickables[41].effect)+" bytes.<br>Amount of expansion: "+format(player.s.expansionII)+"."},
        effect() {
            let partition = new Decimal(100).times(player.s.expansionII.times(15)).add(1).max(1)
+         if (hasUpgrade("pa",47)) partition = partition.times(tmp.s.clickables[42].effect)
+           return partition;
+
+        },
+       
+    },
+    42: {
+        title() {return "Partition III"},
+        baseCost() {
+            return new Decimal(1e240)
+        },
+        cost() {
+              let cost = this.baseCost()
+          
+              return cost.times(player.s.expansionIII.times(1e10).add(1));
+
+        },
+        canClick() {
+            return player.s.points.gte(this.cost())
+        },
+ increments() {
+    let increment = new Decimal(1)
+
+    return increment
+ },
+        onClick() {
+     player.s.points = player.s.points.sub(this.cost())
+       
+        player.s.expansionIII = player.s.expansionIII.add(tmp.s.clickables[42].increments)
+        },
+   unlocked() {return hasUpgrade("pa",47)},
+       
+        display() {return "Cost: "+format(this.cost())+" sectors<br>Increases capacity and increment of previous partitions by x"+format(tmp.s.clickables[42].effect)+" bytes.<br>Amount of expansion: "+format(player.s.expansionIII)+"."},
+       effect() {
+           let partition = new Decimal(1e10).times(player.s.expansionIII.times(145)).add(1).max(1)
         
            return partition;
 
         },
        
     },
-   
+    51: {
+        title() {return "Upgrade Intel CPU Type"},
+        
+        cost() {
+              let cost = [10000,1e16,1e60,1e100,1e115,1e165,1e199,1e264,"1.80e308","1e600","1e900","1e1100","1e1600","1e1700","1e2100","1e3500","1e5400","1e10900","1e23400"]
+              let x = new Decimal(player.s.intel)
+              return new Decimal(cost[x])
+
+        },
+        canClick() {
+            return player.s.points.gte(this.cost())
+        },
+         type() {
+            let type = ["Pentium","Pentium Pro","Pentium II","Celeron","Xeon","Pentium III","Pentium 4","Itanium","Pentium M","Pentium D","Core","Core 2","Atom","Core i","Core i3","Core i5","Core i7","Core i9","Core Ultra"]
+            let x = new Decimal(player.s.intel)
+              return type[x]
+         },
+        onClick() {
+     player.s.points = player.s.points.sub(this.cost())
+       
+        player.s.intel = player.s.intel.add(1)
+        },
+
+       
+        display() {return "Cost: "+format(this.cost())+" sectors<br>Upgrades CPU type to improve/add benefits.<br><br>Current Intel CPU type: "+tmp.s.clickables[51].type+""},
+    
+       
+    },
+      52: {
+        title() {return "Upgrade AMD CPU Type"},
+        
+        cost() {
+              let cost = [1e141,1e170,1e250,"1e400","1e600","1e1200","1e3003","1e4000","1e6700","1e8200","1e11000","1e13000","1e16000","1e17000","1e21000","1e35000","1e54000","1e109000","1e114000","1e150000","1e330000","1e550000","1e790000","1e1.2e6","1e1.7e6","1e3e6","2e1e6"]
+              let x = new Decimal(player.s.amd)
+              return new Decimal(cost[x])
+
+        },
+        canClick() {
+            return player.s.points.gte(this.cost())
+        },
+         type() {
+            let type = ["Am9080","Am286","Am386","Am486","K5","K6","K6-2/3","Athlon (K7)","Duron","Athlon XP","Athlon 64","Opteron","Sempron","Athlon 64 X2","Phenom","Phenom II","Bulldozer (FX-Series)","Piledriver","Steamroller","Excavator","Ryzen (Zen)","Threadripper","EPYC","Zen+","Zen 2","Zen 3","Zen 4","Zen 5"]
+            let x = new Decimal(player.s.amd)
+              return type[x]
+         },
+        onClick() {
+     player.s.points = player.s.points.sub(this.cost())
+       
+        player.s.amd = player.s.amd.add(1)
+        },
+  unlocked() {return hasChallenge("pa",11)},
+       
+        display() {return "Cost: "+format(this.cost())+" sectors<br>Upgrades CPU type to improve/add benefits.<br><br>Current AMD CPU type: "+tmp.s.clickables[52].type+""},
+    
+       
+    },
 }
 })
 
@@ -3911,6 +4690,8 @@ addLayer("c", {
    
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
+             if (inChallenge("pa",11)) return new Decimal(1)
+        if (player.truck.inTrucking.gte(1)) return new Decimal(0)
         if (inChallenge("s",11)) return new Decimal(1).times(tmp.s.cheeseburgerEff) 
        if (hasUpgrade("c",52)) mult = mult.times(upgradeEffect("c",52))
         if (hasUpgrade("s",22)) mult = mult.pow(10)
@@ -3967,6 +4748,8 @@ addLayer("c", {
                             if (resettingLayer=="p")    keep.push("upgrades")
 
           if (hasUpgrade("s",23)) keep.push("upgrades")
+
+            if (hasMilestone("pa",2)) keep.push("upgrades")
         if (layers[resettingLayer].row > this.row) layerDataReset("c", keep)
     },
 
@@ -4050,7 +4833,7 @@ if (inChallenge("s",11)) return new Decimal(1)
         31: {
             title: "A Great Discovery",
             description: "You have discovered a new way to inflate your currencies and turn into powerful machines! For this points gain is raised 1.5, and when you unlock Sectors, you unlock Disk Drives.",
-            cost: new Decimal("1e541"),
+            cost: new Decimal("1e607"),
             unlocked() {return hasUpgrade("c",24)},
             currencyDisplayName: "points",
             currencyInternalName: "points",
@@ -4060,14 +4843,14 @@ if (inChallenge("s",11)) return new Decimal(1)
         41: {
             title: "Cookie Bank",
             description: "Unlock Willy.",
-            cost: new Decimal("1e18"),
+            cost: new Decimal("1e22"),
             unlocked() {return player.s.unlocked},
            
         },
         51: {
             title: "Cookie Temple",
             description: "Cookies add to the first Partition capacity and your first partition now adds to Cookie's direct multi.",
-            cost: new Decimal("5e19"),
+            cost: new Decimal("5e22"),
             unlocked() {return player.s.unlocked},
             effect() {
                 
@@ -4084,7 +4867,7 @@ if (inChallenge("s",11)) return new Decimal(1)
         52: {
             title: "Cookie Wizard Tower",
             description: "Partition space now boosts Cookie gain.",
-            cost: new Decimal("1.2e20"),
+            cost: new Decimal("1.2e23"),
             unlocked() {return player.s.unlocked},
             effect() {
                 
@@ -4101,14 +4884,14 @@ if (inChallenge("s",11)) return new Decimal(1)
         53: {
             title: "Cookie Shipment",
             description: "Multiply points base gain by 16.",
-            cost: new Decimal("1e23"),
+            cost: new Decimal("1e24"),
             unlocked() {return player.s.unlocked},
            
         },
         54: {
             title: "Cookie Alchemy Lab",
             description: "Cookies now multiplies itself.",
-            cost: new Decimal("5e25"),
+            cost: new Decimal("1e33"),
             effect() {
                 
 
@@ -4125,7 +4908,7 @@ if (inChallenge("s",11)) return new Decimal(1)
         61: {
             title: "Cookie Portal",
             description: "'Cookie Cursor' effect is now boosted based on Sectors.",
-            cost: new Decimal("1e29"),
+            cost: new Decimal("1e35"),
             effect() {
                 
 
@@ -4142,9 +4925,57 @@ if (inChallenge("s",11)) return new Decimal(1)
         71: {
             title: "Cookie Time Machine",
             description: "Multiply the partition storage by 8.",
-            cost: new Decimal("1e31"),
+            cost: new Decimal("1e37"),
           
             unlocked() {return hasUpgrade("s",23)},
+           
+        },
+         81: {
+            title: "Cookie Antimatter Condenser",
+            description: "Affinity's effect is raised 1.05.",
+            cost: new Decimal("1e455"),
+          
+            unlocked() {return hasUpgrade("s",106)},
+           
+        },
+         91: {
+            title: "Cookie Prism",
+            description: "Unlocks a new Sector buyable.",
+            cost: new Decimal("1e490"),
+          
+            unlocked() {return hasUpgrade("c",81)},
+           
+        },
+          92: {
+            title: "Cookie Chancemaker",
+            description: "Sectors gain exp+0.1.",
+            cost: new Decimal("1e494"),
+          
+            unlocked() {return hasUpgrade("c",91)},
+           
+        },
+         82: {
+            title: "Cookie Fractal Engine",
+            description: "Sectors gain exp+0.05 and Points softcap starts ^1.05 later.",
+            cost: new Decimal("1e520"),
+          
+            unlocked() {return hasUpgrade("c",92)},
+           
+        },
+          72: {
+            title: "Cookie Javascript Console",
+            description: "Sectors gain exp+0.05, Points softcap starts ^1.03 later.",
+            cost: new Decimal("1e540"),
+          
+            unlocked() {return hasUpgrade("c",82)},
+           
+        },
+          62: {
+            title: "Cookie Idleverse",
+            description: "Sectors gain exp+0.03, Points softcap starts ^1.02 later.",
+            cost: new Decimal("1e565"),
+          
+            unlocked() {return hasUpgrade("c",72)},
            
         },
         12: {
@@ -4161,7 +4992,7 @@ if (inChallenge("s",11)) return new Decimal(1)
 
 addLayer("pa", {
     startData() { return {
-        unlocked: true,
+        unlocked: false,
         points: new Decimal(0),
         total: new Decimal(0),
         best: new Decimal(0),
@@ -4169,20 +5000,616 @@ addLayer("pa", {
     }},
     color: "#AAAAAA",
     row: 4,
-    layerShown() {return hasUpgrade("s",97)}, 
-    tooltip() { // Optional, tooltip displays when the layer is locked
-        return ("Pashtocha (WIP)")
-    },
+    layerShown() {return hasUpgrade("s",97)||player.pa.unlocked}, 
+   name: "pashtocha",
     branches: ["s"],
    symbol: "PA",
+   resource: "pashtocha points",
+   baseResource: "points",                 // The name of the resource your prestige gain is based on.
+   baseAmount() { return player.points },  // A function to return the current amount of baseResource.
+
+   requires: new Decimal("1e13750"),              // The amount of the base needed to  gain 1 of the prestige currency.
+   gainMult() {                            // Returns your multiplier to your gain of the prestige resource.
+    let mult = new Decimal(1)       
+      if (player.truck.inTrucking.gte(1)) return new Decimal(0)
+      if (hasUpgrade("pa",15)) mult = mult.times(upgradeEffect("pa",15))
+         if (hasUpgrade("pa",22)) mult = mult.times(4)
+               if (hasUpgrade("pa",25)) mult = mult.times(upgradeEffect("pa",25))
+
+    if (hasUpgrade("pa",31)) mult = mult.times(upgradeEffect("pa",31))
+
+        if (hasUpgrade("s",105)) mult = mult.times(3)
+
+          if (hasUpgrade("pa",46)) mult = mult.times(upgradeEffect("pa",46))
+
+             if (hasUpgrade("pa",106)) mult = mult.times(upgradeEffect("pa",106))
+              
+    return mult;// Factor in any bonuses multiplying gain here.
+},
+gainExp() {                             // Returns the exponent to your gain of the prestige resource.
+    return new Decimal(1)
+},                                 // Also the amount required to unlock the layer.
+doReset(resettingLayer) {
+
+    let keep = [];
    
-    tabFormat: [
-        "blank", 
-        ["display-text", function() { return "<h2>Pashtocha.</h2>" }],
- "blank",
- "blank",
- ["display-text", function() { return "This layer is currently not finished yet. Check the discord server for more information." }],
-    ],
+   
+  
+    if (layers[resettingLayer].row > this.row) layerDataReset("pa", keep)
+
+
+},
+
+ onPrestige() {
+  player.points = new Decimal("1");
+    },
+   type: "normal",                         // Determines the formula used for calculating prestige currency.
+   exponent: 0.002,   
+   prestigeButtonText() { 
+  return "Ascend to reset previous progress, including Sectors, but gain "+formatWhole(tmp[this.layer].resetGain)+" Pashtocha Points.<br><br> Next at " + formatWhole(tmp[this.layer].nextAt) + " points"
+   },
+   tabFormat: {
+    "Main": {
+     
+        content: ["main-display",
+        "prestige-button",
+        "resource-display", "blank",
+       
+        "milestones",        
+        "blank",
+        "blank",
  
+    ]},
+
+     "Upgrades": {
+         unlocked() {return hasMilestone("pa",7)},
+        content: ["main-display",
+        "prestige-button",
+        "resource-display", "blank",
+      
+        "blank",
+        "blank",
+        "upgrades",  
+    ]},
+     "Challenges": {
+          
+            unlocked() {return hasMilestone("pa",8)},
+                   content: ["main-display",
+                   "prestige-button",
+                   "resource-display", "blank",
+                  "blank",
+               
+                  "challenges",
+                  "blank","blank",
+                
+
+            ]
+    
+        },
+
+     
+},
+resetsNothing() {return hasMilestone("pa",6)},
+
+passiveGeneration() { 
+    let passive = new Decimal(0)
+
+    if (hasMilestone("pa",7)) passive = passive.add(1)
+    return passive; },
+milestones: {
+    0: {
+        requirementDescription: "1 Total Pashtocha Point",
+        done() {return player[this.layer].total.gte(1)}, // Used to determine when to give the milestone
+        effectDescription: "Keeps Incremental challenges on reset.",
+        unlocked() {return player.pa.unlocked},
+    },
+     1: {
+        requirementDescription: "2 Total Pashtocha Points",
+        done() {return player[this.layer].total.gte(2)}, // Used to determine when to give the milestone
+        effectDescription: "Keeps both Exponent Coins and Incremental Coin upgrades on reset.",
+        unlocked() {return hasMilestone("pa",0)},
+    },
+     2: {
+        requirementDescription: "3 Total Pashtocha Points",
+        done() {return player[this.layer].total.gte(3)}, // Used to determine when to give the milestone
+        effectDescription: "Keeps Cookies upgrades on reset.",
+         unlocked() {return hasMilestone("pa",1)},
+    },
+      3: {
+        requirementDescription: "4 Total Pashtocha Points",
+        done() {return player[this.layer].total.gte(4)}, // Used to determine when to give the milestone
+        effectDescription: "Automate Poacher buyables.",
+          unlocked() {return hasMilestone("pa",2)},
+    },
+   
+      4: {
+        requirementDescription: "6 Total Pashtocha Points",
+        done() {return player[this.layer].total.gte(6)}, // Used to determine when to give the milestone
+        effectDescription: "Affinity Dimensions can now be purchased outside of Steal TMT's Cheeseburger.",
+         unlocked() {return hasMilestone("pa",3)},
+    },
+      5: {
+        requirementDescription: "10 Total Pashtocha Points",
+        done() {return player[this.layer].total.gte(10)}, // Used to determine when to give the milestone
+        effectDescription: "Base Points are now gained in Steal TMT's Cheeseburger but are square rooted.",
+         unlocked() {return hasMilestone("pa",4)},
+    },
+    6: {
+        requirementDescription: "13 Total Pashtocha Points",
+        done() {return player[this.layer].total.gte(13)}, // Used to determine when to give the milestone
+        effectDescription: "Pashtocha no longer resets anything (except for Points).",
+         unlocked() {return hasMilestone("pa",5)},
+    },
+    7: {
+        requirementDescription: "21 Total Pashtocha Points",
+        done() {return player[this.layer].total.gte(21)}, // Used to determine when to give the milestone
+        effectDescription: "Unlocks new content.",
+         unlocked() {return hasMilestone("pa",6)},
+    },
+     8: {
+        requirementDescription: "100,000 Total Pashtocha Points",
+        done() {return player[this.layer].total.gte(1e5)}, // Used to determine when to give the milestone
+        effectDescription: "Unlocks the first Pashtocha challenge.",
+         unlocked() {return hasMilestone("pa",7)},
+    },
+     9: {
+        requirementDescription: "1e38 Total Pashtocha Points",
+       /* done() {return player[this.layer].total.gte(1e38)}, // Used to determine when to give the milestone
+       */
+
+       done() {return false},
+        effectDescription: "Unlocks the second Pashtocha challenge.<br>Coming soon in next update",
+         unlocked() {return hasMilestone("pa",8)},
+    },
+     10: {
+        requirementDescription: "1e71 Total Pashtocha Points",
+        done() {return player[this.layer].total.gte(1e71)}, // Used to determine when to give the milestone
+        effectDescription: "Unlocks the third and final Pashtocha challenge.",
+         unlocked() {return hasMilestone("pa",9)},
+    },
+},
+   upgrades: {
+        11: {
+            title: "Pentium+",
+            description: "Pentium's first effect is better.",
+            cost: new Decimal(100),
+            
+            
+        },
+         12: {
+            title: "Pentium Advanced",
+            description: "Points softcap starts x1e6 later.",
+            cost: new Decimal(200),
+            unlocked() {return hasUpgrade("pa",11)},
+            
+        },
+         13: {
+            title: "Celeron Elements",
+            description: "'Nightadding Booster' hardcap is increased to 3,000.",
+            cost: new Decimal(200),
+            unlocked() {return hasUpgrade("pa",12)},
+            
+        },
+          14: {
+            title: "Full Adder",
+            description: "Boost 'Night Adder' and 'Extension' upgrades based on your Pashtocha points.",
+            cost: new Decimal(100),
+
+              effect() {
+                
+
+                let eff = player.pa.points.add(1).pow(2)
+                if (hasUpgrade("pa",23)) eff = eff.times(upgradeEffect("pa",23))
+             
+                return eff;
+            },
+                   tooltip() {return "Pashtocha<sup>2</sup>+1"},
+            effectDisplay() { return format(tmp.pa.upgrades[14].effect)+"x" },
+            unlocked() {return hasUpgrade("pa",13)},
+            
+        },
+          15: {
+            title: "Pashtocha Booster I",
+            description: "Pashtocha multiplies its own gain",
+            cost: new Decimal(100),
+
+              effect() {
+                
+
+                let eff = player.pa.points.add(1).pow(0.2)
+                
+             
+                return eff;
+            },
+                   tooltip() {return "Pashtocha<sup>0.2</sup>+1"},
+            effectDisplay() { return format(tmp.pa.upgrades[15].effect)+"x" },
+            unlocked() {return hasUpgrade("pa",14)},
+            
+        },
+         16: {
+            title: "Celeron Boost",
+            description: "Celeron's effect is increased from 1.0002 to 1.002.",
+            cost: new Decimal(350),
+
+
+            unlocked() {return hasUpgrade("pa",15)},
+            
+        },
+          17: {
+            title: "Furtherer",
+            description: "Further-Exponent Point's effect is squared.",
+            cost: new Decimal(500),
+
+
+            unlocked() {return hasUpgrade("pa",16)},
+            
+        },
+         21: {
+            title: "Exponent Starter",
+            description: "Points softcap starts later based on Exponent Points.",
+            cost: new Decimal(1000),
+
+  effect() {
+                
+
+                let eff = player.ex.expPoints.add(1).root(1024)
+                
+             
+                return eff;
+            },
+                   tooltip() {return "(ExponentPoints√^1024)+1"},
+            effectDisplay() { return format(tmp.pa.upgrades[21].effect)+"x" },
+            unlocked() {return hasUpgrade("pa",17)},
+            
+        },
+         22: {
+            title: "Pashtocha Expanders",
+            description: "Quadruple Pashtocha gain.",
+            cost: new Decimal(1500),
+
+ 
+            unlocked() {return hasUpgrade("pa",21)},
+            
+        },
+         23: {
+            title: "Half Adder",
+            description: "'Full Adder' effect is boosted based on Exponent Points.",
+            cost: new Decimal(5000),
+ effect() {
+                
+
+                let eff = player.ex.expPoints.add(1).root(1536)
+                
+             
+                return eff;
+            },
+                   tooltip() {return "(ExponentPoints√^1536)+1"},
+            effectDisplay() { return format(tmp.pa.upgrades[23].effect)+"x" },
+ 
+            unlocked() {return hasUpgrade("pa",22)},
+            
+        },
+           24: {
+            title: "Quarter Adder",
+            description: "'ext4' formula is better.",
+            cost: new Decimal(5000),
+ 
+                   tooltip() {return "ExpCoins+1<sup>0.2</sup><br>|<br>V<br>ExpCoins+1<sup>2</sup>"},
+          
+ 
+            unlocked() {return hasUpgrade("pa",23)},
+            
+        },
+         25: {
+            title: "Blessed Pashtochas",
+            description: "Each Pashtocha upgrade purchased boosts Pashtocha gain.",
+            cost: new Decimal(5000),
+   effect() {
+                let eff = Decimal.pow(1.5, player.pa.upgrades.length);
+              
+                return eff;
+            },
+            effectDisplay() { return format(tmp.pa.upgrades[25].effect)+"x" },
+                   tooltip() {return "PashUpgradePurchased<sup>1.5</sup>"} ,
+          
+ 
+            unlocked() {return hasUpgrade("pa",24)},
+            
+        },
+          26: {
+            title: "Anti-Piracy",
+            description: "Base Points gain is multiplied by your Elements.",
+            cost: new Decimal(1e6),
+   effect() {
+                  let eff = player.ic.elements.add(1).root(3)
+                
+             
+                return eff;
+            },
+            effectDisplay() { return format(tmp.pa.upgrades[26].effect)+"x" },
+                   tooltip() {return "√^3(Elements)+1"} ,
+          
+ 
+            unlocked() {return hasUpgrade("pa",25)},
+            
+        },
+         27: {
+            title: "Original Challenges",
+            description: "'New Challenges' formula is better.",
+            cost: new Decimal(10e6),
+ 
+                tooltip() {return "ExpCoins+1<sup>0.5</sup><br>|<br>V<br>ExpCoins+1<sup>2</sup>"},
+          
+ 
+            unlocked() {return hasUpgrade("pa",26)},
+            
+        },
+          31: {
+            title: "Pashtocha Booster II",
+            description: "Partition bytes boost Pashtocha gain and Unlock CPU Threads.",
+            cost: new Decimal(15e6),
+ 
+                effect() {
+                
+
+                let eff = tmp.s.clickables[11].capacity.add(1).pow(0.02)
+                
+             
+                return eff;
+            },
+                   tooltip() {return "Data<sup>0.02</sup>+1"},
+            effectDisplay() { return format(tmp.pa.upgrades[31].effect)+"x" },
+          
+ 
+            unlocked() {return hasUpgrade("pa",27)},
+            
+        },
+         32: {
+            title: "Affinity Photo",
+            description: "Unlock Affinity Dimension IV and square root Affinity's negative effect.",
+            cost: new Decimal(7.5e13),
+ 
+              
+          
+ 
+            unlocked() {return hasUpgrade("pa",31)},
+            
+        },
+        33: {
+            title: "Affinity Designer",
+            description: "'Cookie Garden' cap is extended to 100,000.",
+            cost: new Decimal(3e14),
+ 
+              
+          
+ 
+            unlocked() {return hasUpgrade("pa",32)},
+            
+        },
+         34: {
+            title: "Slowhorn",
+            description: "'VFAT' effect is raised ^5.",
+            cost: new Decimal(4e14),
+ 
+              
+          
+ 
+            unlocked() {return hasUpgrade("pa",33)},
+            
+        },
+          35: {
+            title: "Continuous Resultant",
+            description: "Celeron's effect is raised to 1.1 and square the hardcap of 'Nightadding Booster'.",
+            cost: new Decimal(1e15),
+ 
+              
+          
+ 
+            unlocked() {return hasUpgrade("pa",34)},
+            
+        },
+          36: {
+            title: "1 short beep",
+            description: "Further-Exponent coin cost is lowered.",
+            cost: new Decimal(5e19),
+ 
+              
+          
+ 
+            unlocked() {return hasUpgrade("pa",35)},
+            
+        },
+         37: {
+            title: "2 short beeps",
+            description: "Automate Affinity Dimensions and multiply generation of Further-Exponent Points by 500.",
+            cost: new Decimal(1e20),
+ 
+              
+          
+ 
+            unlocked() {return hasUpgrade("pa",36)},
+            
+        },
+         41: {
+            title: "3 short beeps",
+            description: "Pentium I's effect is doubled and Pentium IV's effect is increased by 50%.",
+            cost: new Decimal(2e20),
+ 
+              
+          
+ 
+            unlocked() {return hasUpgrade("pa",37)},
+            
+        },
+          42: {
+            title: "4 short beeps",
+            description: "VFAT's formula is better",
+            cost: new Decimal(5e20),
+ 
+              
+          
+ 
+            unlocked() {return hasUpgrade("pa",41)},
+                 tooltip() {return "log10(∛Points)+1<br>|<br>V<br>log10(Points)+1"},
+        },
+         43: {
+            title: "5 short beeps",
+            description: "'Non-System disk or disk error' effect is squared and reduce the scaling of Dubnium by -1.5.",
+            cost: new Decimal(1e21),
+ 
+              
+          
+ 
+            unlocked() {return hasUpgrade("pa",42)},
+             
+        },
+         44: {
+            title: "6 short beeps",
+            description: "Orb's effect is raised based on Pashtocha upgrades bought.",
+            cost: new Decimal(1e27),
+ 
+                effect() {
+                
+
+                 let eff = Decimal.pow(1.1, player.pa.upgrades.length);
+                
+             
+                return eff;
+            },
+                   tooltip() {return "PashtochaUpgrades<sup>1.1</sup>"},
+            effectDisplay() { return "^"+format(tmp.pa.upgrades[44].effect) },
+              
+          
+ 
+            unlocked() {return hasUpgrade("pa",43)},
+             
+        },
+         45: {
+            title: "7 short beeps",
+            description: "Exponent Coin effect softcap starts later based on Pashtocha upgrades bought.",
+            cost: new Decimal(1.5e27),
+ 
+                effect() {
+                
+
+                 let eff = Decimal.pow(1.01, player.pa.upgrades.length);
+                
+             
+                return eff;
+            },
+                   tooltip() {return "PashtochaUpgrades<sup>1.01</sup>"},
+            effectDisplay() { return "^"+format(tmp.pa.upgrades[45].effect) },
+              
+          
+ 
+            unlocked() {return hasUpgrade("pa",44)},
+             
+        },
+          46: {
+            title: "8 short beeps",
+            description: "Pashtocha gain is multiplied based on best Points reached in Trucking and raise Points by 1.45.",
+            cost: new Decimal(2e27),
+ 
+                effect() {
+                
+
+                 let eff = player.truck.pointsinTrucking.pow(0.00015).add(1)
+                
+             
+                return eff;
+            },
+                   tooltip() {return "PointsInTruck<sup>0.00015</sup>+1"},
+            effectDisplay() { return format(tmp.pa.upgrades[46].effect)+"x" },
+              
+          
+ 
+            unlocked() {return hasUpgrade("pa",45)},
+             
+        },
+          47: {
+            title: "9 short beeps",
+            description: "Unlock a new Partition and is automated.",
+            cost: new Decimal(3.2e29),
+ 
+              
+              
+          
+ 
+            unlocked() {return hasUpgrade("pa",46)},
+             
+        },
+        51: {
+            title: "10 short beeps",
+            description: "Raise points gain for each Pashtocha upgrade purchased.",
+            cost: new Decimal(1e32),
+ 
+              
+               effect() {
+                
+
+                 let eff = Decimal.pow(1.05, player.pa.upgrades.length);
+                
+             
+                return eff;
+            },
+                   tooltip() {return "PashtochaUpgrades<sup>1.05</sup>"},
+            effectDisplay() { return "^"+format(tmp.pa.upgrades[51].effect) },
+          
+ 
+            unlocked() {return hasUpgrade("pa",47)},
+             
+        },
+          52: {
+            title: "11 short beeps",
+            description: "Unlock Universal Dimension IV.",
+            cost: new Decimal(1e33),
+ 
+              
+           
+          
+ 
+            unlocked() {return hasUpgrade("pa",51)},
+             
+        },
+         53: {
+            title: "1 long 2 short beeps",
+            description: "While Trucking up, points softcap starts later based on best points in Trucking.",
+            cost: new Decimal(2e33),
+ 
+              
+           
+                          effect() {
+                
+
+                 let eff = player.truck.pointsinTrucking.add(1).log10().pow(0.01)
+                
+             
+                return eff;
+            },
+                   tooltip() {return "log10(PointsInTruck<sup>0.01</sup>)+1"},
+            effectDisplay() { return "^"+format(tmp.pa.upgrades[53].effect)},
+              
+ 
+            unlocked() {return hasUpgrade("pa",52)},
+             
+        },
+    },
+     challenges: {
+        11: {
+            name: "The Wrath of Blue Screen of Death",
+            challengeDescription: "Normal layers multis are set to 1 and for Exponent Coins and Orbs respectively, their base is set to 2 and 4. You also can't get base points, and Points gain is raised ^0.1. Entering this forces a Sector reset.",
+           onEnter() {
+            doReset("s",true)
+           },
+          goal(){
+           return new Decimal("1e13750");
+                
+            
+            },
+           
+            rewardDescription: "Unlock AMD CPU.",
+                style: {'width':'622px','height':'222px'},
+        },
+    }
 })
 

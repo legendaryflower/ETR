@@ -7,7 +7,7 @@ let newsPosition = -1e100; // hopefully noones screen is this big
 function tickNews() {
   if (player) {
   if (!player.hideNews) {
-  newsPosition -= 3;
+  newsPosition -= 2;
   ticker.style.left = `${newsPosition}px`;
 
   if (newsPosition < -ticker.offsetWidth) newNewsMessage()};
@@ -30,15 +30,26 @@ function newNewsMessage() {
 // the second element is a function that returns a boolean of whether to shown it
 const newsArray = [
   ["I don't have a word to say this one..."],
-  ["Chancemakers are actually gamblers. This is because they just always get too lucky, defeating gamblers that lose 99% of the time before they win big."],
+  ["If a folder licks a lemon, it turns into a RAR file."],
   ["This is what a 5 year old kid will say this: WE GOT EXPONENT TREE REWRITTEN UPDATE BEFORE GTA 6!1!1!1!!!11!!."],
-  ["I ate a burrito and it redirected me to meatspin - By some random guy. How can you get redirected into meatspin by just eating a burrito? ??? No answer"],
-  ["Don't click on an elephant."],
-  ["Rickrolling seems to be too popular now, maybe let's do alternative rickroll. Onlyroll! You can use this for free."],
+  ["I ate a burrito, and it redirected me to meatspin."],
   ["e"],
-  ["1.246F1,761 stats sounds what a simple modder will encounter."],
+  ["1.246F1,761 is something related to inflation. Inflation is when like a resource hogs a bunch of stats and then decides to break free and then just inflate into tetrations."],
   ["*PUKES* I SAW AN UGLY FLY TODAY"],
   ["keyboard movement is forever superior"],
+    ["Excuse me bro"],
+        ["Click here to make nothing happen."],
+  ["Aw sheet we got hammered by Google."],
+  ["What in tarnation is this"],
+    ["Kill a zombie and then watch what just happens."],
+      ["there’s no way you can force someone to remove someone’s skin even if they put the same skin on different games"],
+        ["'If I don't care about it anymore, why do I not care about it anymore? Because I DONT CARE ABOUT IT ANYMORE' visible confusion 💀"],
+
+            ["Please stop alr."],
+         ["🏴‍☠️"],
+                  ["bip beep beeeeeeep beep beep beep beep"],
+                         ["It's called exponent tree but there are some unrelated things - by a random person"],
+                  
 ];
 setTimeout(() => {
   ticker = document.getElementById("newsContent");
