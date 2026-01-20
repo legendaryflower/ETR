@@ -106,3 +106,39 @@
 .star:after {
 	transform: rotate(35deg);
 }
+
+.z.grad:not(.locked):not(.bought) {
+	background: radial-gradient(#00850b, #00f715, #00850b, #00f715);
+	background-size: 50% 100%;
+}
+
+.z.anim:not(.locked):not(.bought) {
+	animation: zombie 10s linear infinite;
+}
+
+@keyframes zombie {
+	0% {
+		background-position: 0% 0%;
+	}
+	100% {
+		background-position: 400% 0%;
+	}
+}
+
+.si.grad:not(.locked):not(.bought) {
+	background: radial-gradient(#616161, #a7a7a7, #616161, #a7a7a7);
+	background-size: 100% 50%;
+}
+
+.si.anim:not(.locked):not(.bought) {
+	animation: skull 10s linear infinite;
+}
+
+@keyframes skull {
+	0% {
+		background-position: 0% 0%;
+	}
+	100% {
+		background-position: 0% 400%;
+	}
+}

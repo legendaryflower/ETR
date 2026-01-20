@@ -16,6 +16,8 @@ function startPlayerBase() {
 		version: VERSION.num,
 		beta: VERSION.beta,
 		timePlayed: 0,
+		anim: true,
+		grad: true,
 		keepGoing: false,
 		hasNaN: false,
 		hideNews: false,

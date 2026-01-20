@@ -49,7 +49,15 @@ const newsArray = [
          ["🏴‍☠️"],
                   ["bip beep beeeeeeep beep beep beep beep"],
                          ["It's called exponent tree but there are some unrelated things - by a random person"],
-                  
+
+
+    ["They say that someone felt in love in trading so he had to bug the creator to add one. But, this is not an RPG game. That's an incremental game!"],
+    ["What killed the dinosaurs? IT'S ICE"],      
+      ["So I just heard online that someone is throwing an Intel CPU into a trash can because they think that Intel sucks because of their [CENSORED] issues with one of their CPUs."],      
+          ['<h1>I am so big!</h1>'],      
+            ['<small>I am so small!</small>'],      
+          ["There might be a bee powering your system in the psu, don’t agitate them, you watch out"],         
+                    ['<img src="discord.png"> - Yes, you can put an image in the news ticker. Doesn’t matter if it works or not.'],      
 ];
 setTimeout(() => {
   ticker = document.getElementById("newsContent");

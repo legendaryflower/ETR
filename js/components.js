@@ -251,10 +251,16 @@ function loadVue() {
 	Vue.component('prestige-button', {
 		props: ['layer', 'data'],
 		template: `
-		<button v-if="(tmp[layer].type !== 'none')" v-bind:class="{ [layer]: true, reset: true, locked: !tmp[layer].canReset, can: tmp[layer].canReset}"
+		<div class='upgRow'><button v-if="(tmp[layer].type !== 'none')" v-bind:class="{ [layer]: true, reset: true, locked: !tmp[layer].canReset, can: tmp[layer].canReset}"
 			v-bind:style="[tmp[layer].canReset ? {'background-color': tmp[layer].color} : {}, tmp[layer].componentStyles['prestige-button']]"
 			v-html="prestigeButtonText(layer)" v-on:click="doReset(layer)">
 		</button>
+			
+		<button v-if="player.si.selectionActive&&tmp[layer].row<tmp.si.rowLimit&&tmp.si.canBeMastered.includes(layer)&&player.si.current==layer" v-bind:class="{ si: true, reset: true, locked: player[layer].points.lt(tmp.si.masteryGoal[layer]), can: player[layer].points.gte(tmp.si.masteryGoal[layer]), anim: player.anim, grad: player.grad }"
+			v-bind:style="(player[layer].points.gte(tmp.si.masteryGoal[layer]))?{'background-color': tmp.si.color}:{}"
+			v-html="(player[layer].points.gte(tmp.si.masteryGoal[layer]))?('Skeletify this layer!'):('Reach '+format(tmp.si.masteryGoal[layer])+' '+tmp[layer].resource+' to fully Skeletify this layer.')"
+			v-on:click="layers.si.completeMastery(layer)">
+		</button></div>
 		`
 	
 	})
@@ -263,7 +269,7 @@ function loadVue() {
 	Vue.component('main-display', {
 		props: ['layer', 'data'],
 		template: `
-		<div><span v-if="player[layer].points.lt('1e1000')">You have </span><h2 v-bind:style="{'color': tmp[layer].color, 'text-shadow': '0px 0px 10px ' + tmp[layer].color}">{{data ? format(player[layer].points, data) : formatWhole(player[layer].points)}}</h2> {{tmp[layer].resource}}<span v-if="layers[layer].effectDescription">, <span v-html="run(layers[layer].effectDescription, layers[layer])"></span></span><br><br></div>
+		<div><span v-if="player[layer].points.lt('1e1000')">You have </span><h2 v-bind:style="{'color': tmp[layer].color, 'text-shadow': '0px 0px 10px ' + tmp[layer].color}">{{data ? format(player[layer].points, data) : formatWhole(player[layer].points)}}</h2> <h3 v-if="tmp.si.mastered.includes(layer)" v-bind:style="{'color': tmp.si.color, 'text-shadow': '0px 0px 10px', 'font-weight': 'bold'}">skeletified</h3> {{tmp[layer].resource}}<span v-if="layers[layer].effectDescription">, <span v-html="run(layers[layer].effectDescription, layers[layer])"></span></span><br><br></div>
 		`
 	})
 
@@ -520,7 +526,15 @@ function loadVue() {
 		</div>
 		`
 	})
-
+Vue.component('stars', {
+		props: ['layer'],
+		template: `<div v-if='player.si.mastered.includes(layer)' class='star' style='position: absolute; left: -10px; top: -10px;'></div>
+		<div v-if='false' class='star' style='position: absolute; left: 13px; top: -10px;'></div>
+		<div v-if='false' class='star' style='position: absolute; left: 36px; top: -10px;'></div>
+		<div v-if='false' class='star' style='position: absolute; left: 59px; top: -10px;'></div>
+		<div v-if='false' class='star' style='position: absolute; right: -10px; top: -10px;'></div>
+		`
+	})
 	// Data is an array with the structure of the tree
 	Vue.component('tree', {
 		props: ['layer', 'data'],

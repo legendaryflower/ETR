@@ -17,7 +17,7 @@ var systemComponents = {
 		template: `
 		<button v-if="nodeShown(layer)"
 			v-bind:id="layer"
-			v-on:click="function() {
+		  v-on:click="function() {
 				if (shiftDown && options.forceTooltips) player[layer].forceTooltip = !player[layer].forceTooltip
 				else if(tmp[layer].isLayer) {
 					if (tmp[layer].leftTab) {
@@ -25,11 +25,13 @@ var systemComponents = {
 						showTab('none')
 					}
 					else
-						showTab(layer, prev)
+					if (player.si.selectionActive&&tmp[layer].row<tmp.si.rowLimit&&tmp.si.canBeMastered.includes(layer)&&player.si.current===null) layers.si.startMastery(layer);
+				showTab(layer, prev)
 				}
 				else {run(layers[layer].onClick, layers[layer])}
 			}"
-
+			
+		
 
 			v-bind:class="{
 				treeNode: tmp[layer].isLayer,
@@ -40,10 +42,13 @@ var systemComponents = {
 				forceTooltip: player[layer].forceTooltip,
 				ghost: tmp[layer].layerShown == 'ghost',
 				hidden: !tmp[layer].layerShown,
-				locked: tmp[layer].isLayer ? !(player[layer].unlocked || tmp[layer].canReset) : !(tmp[layer].canClick),
-				notify: tmp[layer].notify && player[layer].unlocked,
+			    locked: (player.si.selectionActive&&tmp[layer].row<tmp.si.rowLimit&&!tmp.si.canBeMastered.includes(layer))||(!player[layer].unlocked && !(tmp[layer].baseAmount.gte(tmp[layer].requires)&&tmp[layer].canReset)),
+				notify: tmp[layer].notify,
 				resetNotify: tmp[layer].prestigeNotify,
-				can: ((player[layer].unlocked || tmp[layer].canReset) && tmp[layer].isLayer) || (!tmp[layer].isLayer && tmp[layer].canClick),
+				can: ((player[layer].unlocked || tmp[layer].canReset) && tmp[layer].isLayer) || (!tmp[layer].isLayer && tmp[layer].canClick)&&!(player.si.selectionActive&&tmp[layer].row<tmp.si.rowLimit&&!tmp.si.canBeMastered.includes(layer)),
+			 
+				anim: player.anim,
+				grad: player.grad,
 				front: !tmp.scrolled,
 			}"
 			v-bind:style="constructNodeStyle(layer)">
@@ -51,7 +56,7 @@ var systemComponents = {
 			<tooltip
       v-if="tmp[layer].tooltip != ''"
 			:text="(tmp[layer].isLayer) ? (
-				player[layer].unlocked ? (tmp[layer].tooltip ? tmp[layer].tooltip : formatWhole(player[layer].points) + ' ' + tmp[layer].resource)
+					player.si.selectionActive&&tmp[layer].row<tmp.si.rowLimit&&!tmp.si.canBeMastered.includes(layer))?'Cannot be skeletified yet.':((player.si.selectionActive&&tmp[layer].row<tmp.si.rowLimit&&player.si.current===null)?'Click to attempt Skelet-Net.':player[layer].unlocked ? (tmp[layer].tooltip ? tmp[layer].tooltip : formatWhole(player[layer].points) + ' ' + tmp[layer].resource)
 				: (tmp[layer].tooltipLocked ? tmp[layer].tooltipLocked : 'Reach ' + formatWhole(tmp[layer].requires) + ' ' + tmp[layer].baseResource + ' to unlock (You have ' + formatWhole(tmp[layer].baseAmount) + ' ' + tmp[layer].baseResource + ')')
 			)
 			: (
@@ -59,6 +64,7 @@ var systemComponents = {
 				: (tmp[layer].tooltipLocked ? tmp[layer].tooltipLocked : 'I am a button!')
 			)"></tooltip>
 			<node-mark :layer='layer' :data='tmp[layer].marked'></node-mark></span>
+			
 		</button>
 		`
 	},

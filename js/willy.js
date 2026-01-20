@@ -15,7 +15,7 @@ addLayer("wi", {
         return ("Feed Willy")
     },
    
-  
+      autoUpgrade() {return player.z.unlocked&&player.si.current==null},
     update(diff) {
       
         if (hasUpgrade("wi", 17)) {
@@ -65,6 +65,8 @@ addLayer("wi", {
                         if (hasUpgrade("wi",22)) mult = mult.times(5)
 
                             if (hasUpgrade("s",55)) mult = mult.times(upgradeEffect("s",55))
+if ((Array.isArray(tmp.si.mastered))?tmp.si.mastered.includes("c"):false) mult = mult.pow(2)
+                                
                 return mult;
             },
             display() {
@@ -102,6 +104,7 @@ addLayer("wi", {
                 let eff = player.ex.expPoints.pow(0.0008).add(1)
                 
                 if (player.truck.inTrucking.gte(1)) eff = eff.root(3)
+                    if ((Array.isArray(tmp.si.mastered))?tmp.si.mastered.includes("c"):false) eff = eff.pow(8)
                 return eff;
             },
             tooltip() {return "ExpPoint+1<sup>0.0008</sup"} ,
@@ -109,7 +112,7 @@ addLayer("wi", {
         },
         12: {
             title: "Cookie Garden",
-            description() {return "Passively generate Cookies based on Points (capped at "+format(tmp.wi.upgrades[this.id].cap)+"%)."},
+            description() {return "Passively generate Cookies based on Points "+"(capped at "+format(tmp.wi.upgrades[this.id].cap)+"%)."},
             cost: new Decimal(25),
             currencyDisplayName: "willy cookies",
             currencyInternalName: "cookies",
@@ -124,6 +127,7 @@ addLayer("wi", {
                 return eff;
             },
             cap() { let cap = new Decimal(100)
+                if (hasMilestone("truck",15)) return new Decimal("1e307")
   if (hasUpgrade("pa",33)) cap = cap.times(1000)
                    
                 return cap; },
@@ -152,7 +156,7 @@ addLayer("wi", {
 
                 let eff = player.c.points.pow(0.02).add(1)
                 
-             
+                    if ((Array.isArray(tmp.si.mastered))?tmp.si.mastered.includes("c"):false) eff = eff.pow(2)
                 return eff;
             },
            
@@ -206,7 +210,7 @@ addLayer("wi", {
                 
 
                 let eff = player.points.add(1).log10().add(1).log10().add(1).log10()
-                
+                      if ((Array.isArray(tmp.si.mastered))?tmp.si.mastered.includes("c"):false) return player.points.add(1).pow(1e-7)
              
                 return eff;
             },
@@ -252,6 +256,7 @@ addLayer("wi", {
                 let eff = Decimal.pow(1.5, player.wi.upgrades.length);
                 
                if (inChallenge("s",11)) return new Decimal(1)
+                       if ((Array.isArray(tmp.si.mastered))?tmp.si.mastered.includes("c"):false) eff = eff.pow(2000)
                 return eff;
             },
            
@@ -259,6 +264,53 @@ addLayer("wi", {
             effectDisplay() { return "+"+format(tmp.wi.upgrades[24].effect)+"%"
              },
             unlocked() {return hasUpgrade("s",46)},
+            
+        },
+            25: {
+            title: "The Willy Shrine",
+            description: "Previous upgrade function is now a multiplier.",
+            cost: new Decimal(1e200),
+            currencyDisplayName: "willy cookies",
+            currencyInternalName: "cookies",
+            currencyLayer: "wi",
+          
+          
+            unlocked() {return hasUpgrade("pa",56)},
+            
+        },
+           26: {
+            title: "Willy God",
+            description: "Unlock a new Element and Poacher buyable, and multiply Base Points based on Exponent Coins.",
+            cost: new Decimal(1e300),
+            currencyDisplayName: "willy cookies",
+            currencyInternalName: "cookies",
+            currencyLayer: "wi",
+           effect() {
+                
+
+                let eff = player.ex.points.pow(2).add(1)
+                
+           if ((Array.isArray(tmp.si.mastered))?tmp.si.mastered.includes("c"):false) eff = eff.pow(10)
+                return eff;
+            },
+           
+            tooltip() {return "ExponentCoins<sup>2</sup>+1"} ,
+            effectDisplay() { return format(tmp.wi.upgrades[26].effect)+"x"
+             },
+          
+            unlocked() {return hasUpgrade("pa",56)},
+            
+        },
+         27: {
+            title: "Infinity Willy",
+            description: "Unlock a new Layer.",
+            cost: new Decimal("1.8e308"),
+            currencyDisplayName: "willy cookies",
+            currencyInternalName: "cookies",
+            currencyLayer: "wi",
+        
+          
+            unlocked() {return hasUpgrade("pa",56)},
             
         },
     },

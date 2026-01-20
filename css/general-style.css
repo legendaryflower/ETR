@@ -79,7 +79,22 @@ h1, h2, h3, b, input {
 		color: #ff0000;
 	}
 }
-
+@keyframes bifurther {
+	from {
+		color: #4BDC13;
+	}
+	33.3% {
+	   	color: #2d9e00;
+	}
+	   
+	66.7% {
+	   	color: #1d6600;
+	}
+	   
+	100% {
+		color: #4BDC13;
+	}
+}
 .further {
 	color: #4BDC13;
 	animation: further 4s cubic-bezier(0.37, 0, 0.63, 1) infinite;

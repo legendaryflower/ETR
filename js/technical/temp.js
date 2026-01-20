@@ -111,6 +111,7 @@ function updateTemp() {
 	}
 
 	tmp.pointGen = getPointGen()
+	tmp.sectorSpeed = preSectorSpeed()
 	tmp.backgroundStyle = readData(backgroundStyle)
 
 	tmp.displayThings = []

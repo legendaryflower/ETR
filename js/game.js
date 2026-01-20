@@ -21,13 +21,14 @@ function getResetGain(layer, useType = null) {
 		if ((!tmp[layer].canBuyMax) || tmp[layer].baseAmount.lt(tmp[layer].requires)) return decimalOne
 		let gain = tmp[layer].baseAmount.div(tmp[layer].requires).div(tmp[layer].gainMult).max(1).log(tmp[layer].base).times(tmp[layer].gainExp).pow(Decimal.pow(tmp[layer].exponent, -1))
 		gain = gain.times(tmp[layer].directMult)
-	
+			gain = softcapStaticGain(gain, tmp[layer].row)
 		return gain.floor().sub(player[layer].points).add(1).max(1);
 	} else if (type=="normal"){
 		if (tmp[layer].baseAmount.lt(tmp[layer].requires)) return decimalZero
 		let gain = tmp[layer].baseAmount.div(tmp[layer].requires).pow(tmp[layer].exponent).times(tmp[layer].gainMult).pow(tmp[layer].gainExp)
 		if (gain.gte(tmp[layer].softcap)) gain = gain.pow(tmp[layer].softcapPower).times(tmp[layer].softcap.pow(decimalOne.sub(tmp[layer].softcapPower)))
 		gain = gain.times(tmp[layer].directMult)
+	if (layer=='c'&&gain.gte(cookiesHardcap())) return new Decimal(cookiesHardcap())
 		return gain.floor().max(0);
 	} else if (type=="custom"){
 		return layers[layer].getResetGain()
@@ -54,6 +55,7 @@ function getNextAt(layer, canMax=false, useType = null) {
 	{
 		if (!tmp[layer].canBuyMax) canMax = false
 		let amt = player[layer].points.plus((canMax&&tmp[layer].baseAmount.gte(tmp[layer].nextAt))?tmp[layer].resetGain:0).div(tmp[layer].directMult)
+		amt = scaleStaticCost(amt, tmp[layer].row)
 		let extraCost = Decimal.pow(tmp[layer].base, amt.pow(tmp[layer].exponent).div(tmp[layer].gainExp)).times(tmp[layer].gainMult)
 		let cost = extraCost.times(tmp[layer].requires).max(tmp[layer].requires)
 		if (tmp[layer].roundUpCost) cost = cost.ceil()
@@ -179,6 +181,8 @@ function generatePoints(layer, diff) {
 
 function doReset(layer, force=false) {
 	if (tmp[layer].type == "none") return
+	if (layer=="z"&&!player.z.unlocked) if (!confirm('Are you sure you want to kill this zombie? Killing a zombie causes a Transcension, meaning that you lose everything, including Pashtocha Points. However, some content that unlock other stuff are kept.')) return
+	
 	let row = tmp[layer].row
 	if (!force) {
 		
@@ -193,7 +197,7 @@ function doReset(layer, force=false) {
 
 
 		if (layers[layer].onPrestige)
-			run(layers[layer].onPrestige, layers[layer], gain)
+		    run(layers[layer].onPrestige, layers[layer], gain)
 		
 		addPoints(layer, gain)
 		updateMilestones(layer)
@@ -320,7 +324,9 @@ function autobuyUpgrades(layer){
 	if (!tmp[layer].upgrades) return
 	for (id in tmp[layer].upgrades)
 		if (isPlainObject(tmp[layer].upgrades[id]) && (layers[layer].upgrades[id].canAfford === undefined || layers[layer].upgrades[id].canAfford() === true))
-			buyUpg(layer, id) 
+			
+		     	buyUpg(layer, id) 
+
 }
 
 function gameLoop(diff) {
@@ -368,8 +374,9 @@ function gameLoop(diff) {
 		for (item in TREE_LAYERS[x]) {
 			let layer = TREE_LAYERS[x][item]
 			player[layer].resetTime += diff
-			if (tmp[layer].passiveGeneration) generatePoints(layer, diff*tmp[layer].passiveGeneration);
-			if (layers[layer].update) layers[layer].update(diff);
+			let speed = (x<1)?tmp.sectorSpeed:new Decimal(1)
+			if (tmp[layer].passiveGeneration) generatePoints(layer, speed.times(diff*tmp[layer].passiveGeneration));
+			if (layers[layer].update) layers[layer].update(speed.times(diff));
 		}
 	}
 

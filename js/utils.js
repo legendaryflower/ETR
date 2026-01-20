@@ -240,6 +240,7 @@ function nodeShown(layer) {
 }
 
 function layerunlocked(layer) {
+	if (player.si.selectionActive&&tmp[layer].row<5&&!tmp.si.canBeMastered.includes(layer)) return false;
 	if (tmp[layer] && tmp[layer].type == "none") return (player[layer].unlocked)
 	return LAYERS.includes(layer) && (player[layer].unlocked || (tmp[layer].canReset && tmp[layer].layerShown))
 }
