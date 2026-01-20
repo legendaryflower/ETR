@@ -3366,7 +3366,7 @@ addLayer("s", {
 
         bifurtherPoints: new Decimal(0),
         bifurtherCoins: new Decimal(0),
-        bestAffinityPoints: new Decimal(0),
+    
         partitionTable: "MBR",
     }},
 
@@ -3444,7 +3444,7 @@ addLayer("s", {
         player.s.time = new Decimal(0);
         player.s.cheeseDuration = new Decimal(0);
         if(player.si.unlocked) player.s.catchedBurgers = new Decimal(10)
-            if (player.z.unlocked) keep.push("player.s.affinityPoints")
+
         if (layers[resettingLayer].row > this.row) layerDataReset("s", keep)
           
     },
@@ -4045,6 +4045,7 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
         return bulk;
     },
     update(diff, resettingLayer) {
+        
         if (player.s.cheeseDuration.gte(tmp.s.cheeseBurgerDuration)&&inChallenge("s",11)) {
             player.s.cheeseDuration = new Decimal(0);
             player.s.cheeseburgers = player.s.cheeseburgers.add(1)
@@ -4087,8 +4088,11 @@ if (getBuyableAmount("ic",46).gte(1)) gen = gen.times(tmp.ic.buyables[46].effect
  
     }
        if (inChallenge("s", 11)) tmp.s.cheeseBurgerDuration = tmp.s.cheeseBurgerDuration.sub(diff).max(0)
-   if (!player.si.unlocked||(Array.isArray(tmp.si.mastered)?tmp.si.mastered.includes("s"):false))   player.s.affinityPoints = player.s.affinityPoints.plus(tmp.s.affinityGeneration.div(20))
+   if (!player.si.unlocked||(Array.isArray(tmp.si.mastered)?tmp.si.mastered.includes("s"):false)) {   
+    
+    player.s.affinityPoints = player.s.affinityPoints.plus(tmp.s.affinityGeneration.div(20))
 
+   }
        player.s.furtherPoints = player.s.furtherPoints.plus(tmp.s.furtherPointGen.div(20))
               player.s.bifurtherPoints = player.s.bifurtherPoints.plus(tmp.s.bifurtherPointGen.div(20))
    if (hasUpgrade("pa", 37)) {
@@ -7884,7 +7888,6 @@ addLayer("si", {
 		selectionActive: false,
 	    current: null,
         auto: false,
-        bestAffinityPoints: new Decimal(0),
         time: new Decimal(0),
     }},
    
@@ -7954,11 +7957,7 @@ branches: ["pa","s"],
    
 
 
- update(diff) {
-      if (!(Array.isArray(tmp.si.mastered))?tmp.si.mastered.includes("s"):false) player.si.bestAffinityPoints = player.si.bestAffinityPoints.max(player.s.affinityPoints)
-       player.si.time = player.si.time.add(diff)
-       if (player.si.time.gte(0.5)) player.s.affinityPoints = player.si.bestAffinityPoints
- },
+
   doReset(resettingLayer) {
         let keep = [];
     
