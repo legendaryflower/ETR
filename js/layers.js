@@ -6615,7 +6615,7 @@ if (inChallenge("s",11)) return new Decimal(1)
             description: "Affinity's effect is raised 1.05.",
             cost: new Decimal("1e455"),
           
-            unlocked() {return hasUpgrade("s",106)},
+            unlocked() {return hasUpgrade("s",105)},
            
         },
          91: {
