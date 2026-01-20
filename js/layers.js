@@ -3962,7 +3962,7 @@ passiveGeneration() {
     return eff;
   },
      corei3Effect() {
-     if (!player.pa.unlocked) return new Decimal(0)
+     if (!player.s.intel.gte(14)) return new Decimal(1)
     let eff = new Decimal(5)
  
 
@@ -7889,6 +7889,8 @@ addLayer("si", {
 	    current: null,
         auto: false,
         time: new Decimal(0),
+        bestAffinityPoints: new Decimal(0),
+        capture: new Decimal(0),
     }},
    
     color: "#616161",                       // The color for this layer, which affects many elements.
@@ -7919,7 +7921,12 @@ branches: ["pa","s"],
     gainExp() {                             // Returns your exponent to your gain of the prestige resource.
         return new Decimal(1)
     },
-  
+  update(diff) {
+      if (!(Array.isArray(tmp.si.mastered))?tmp.si.mastered.includes("s"):false) player.si.bestAffinityPoints = player.si.bestAffinityPoints.max(player.s.affinityPoints)
+      if (player.si.unlocked) player.s.affinityPoints = new Decimal(2162)
+   
+     
+ },
   
     layerShown() { return hasMilestone("truck",17
     )||player.si.unlocked },            // Returns a bool for if this layer's node should be visible in the tree.
@@ -7963,7 +7970,7 @@ branches: ["pa","s"],
     
     
         player.si.time = new Decimal(0);
-  
+        player.si.capture = player.si.capture.max(player.s.affinityPoints)
         if (layers[resettingLayer].row > this.row) layerDataReset("si", keep)
     },
 
