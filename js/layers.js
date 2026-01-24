@@ -8029,7 +8029,7 @@ amtMastered() {
 			if (player.si.mastered.length==0) return ["ex"];
 			let rows = player.si.mastered.map(x => tmp[x].row)
 			let realRows = rows.filter(y => Object.keys(ROW_LAYERS[y]).every(z => player.si.mastered.includes(z) || tmp.si.masteryGoal[z]===undefined));
-			let furthestRow = Math.max(...realRows)+((player.si.current !== null)?0:1);
+			let furthestRow = Math.max(0, ...realRows)+((player.si.current !== null)?0:1);
 			let m = Object.keys(layers).filter(x => (tmp[x].row<=furthestRow&&tmp.si.masteryGoal[x]!==undefined&&(tmp.si.specialReqs[x]?tmp.si.specialReqs[x].every(y => player.si.mastered.includes(y)):true))||player.si.mastered.includes(x));
 			if (player.si.current !== null) m.push(player.si.current);
 			
