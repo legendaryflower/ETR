@@ -13,12 +13,15 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.3",
+	num: "1.3.1",
 	name: "Release",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <b><font color="red">NOTE: Spoilers alert!</font></b><br><br>
+<h3>v1.3.1</h3><br>
+		- Fixed a bug where you are softlocked after skeletifying Exponent Coins.
+		<br><br>
 <h3>v1.3</h3><br>
 		- Added 3 new layers.<br>
 		- Balanced up to completing a Skelet-Net of Sectors.<br>
