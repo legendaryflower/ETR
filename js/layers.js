@@ -8055,7 +8055,7 @@ amtMastered() {
 			doReset("si", true);
 		},
 		specialReqs: {
-    
+            ic: ["ex"],
 			o: ["ic"],
             p: ["o"],
             c: ["ic","o","p"],
