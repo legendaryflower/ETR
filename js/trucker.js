@@ -382,7 +382,7 @@ upgrades: {
       43: {
         title: "H610 Chipset",
         description: "Bifurther-Exponent Point generation is faster based on your Superbase Points.",
-        cost: new Decimal("2.32e708198"),
+        cost: new Decimal("2.32e708197"),
        
         currencyDisplayName: "points while Trucking up",
         currencyInternalName: "pointsinTrucking",
@@ -401,7 +401,7 @@ upgrades: {
      44: {
         title: "X870E Chipset",
         description: "'Trucker Softcaps' also affects Super Softcap in Trucking.",
-        cost: new Decimal("1.4e708200"),
+        cost: new Decimal("1.4e708199"),
        
         currencyDisplayName: "points while Trucking up",
         currencyInternalName: "pointsinTrucking",
@@ -414,7 +414,7 @@ upgrades: {
       45: {
         title: "X870 Chipset",
         description: "'Exponent Starter' also affects Points Softcap<sup>2</sup>.",
-        cost: new Decimal("5.502e708210"),
+        cost: new Decimal("5.502e708209"),
        
         currencyDisplayName: "points while Trucking up",
         currencyInternalName: "pointsinTrucking",
@@ -427,7 +427,7 @@ upgrades: {
      46: {
         title: "B850 Chipset",
         description: "Unlock 4th Partition and Partition Tables.",
-        cost: new Decimal("1e708214"),
+        cost: new Decimal("1e708213"),
        
         currencyDisplayName: "points while Trucking up",
         currencyInternalName: "pointsinTrucking",
@@ -440,7 +440,7 @@ upgrades: {
      47: {
         title: "B840 Chipset",
         description: "Zombie Milestone 2 can now generate Points in TMT's Mighty Cheeseburger equal to your current Points being rooted to 5.",
-        cost: new Decimal("1.5e708216"),
+        cost: new Decimal("1.5e708215"),
        
         currencyDisplayName: "points while Trucking up",
         currencyInternalName: "pointsinTrucking",
@@ -453,7 +453,7 @@ upgrades: {
       51: {
         title: "X670E Chipset",
         description: "Points starts all Truck Softcaps later.",
-        cost: new Decimal("1.43e708218"),
+        cost: new Decimal("1.43e708217"),
        
         currencyDisplayName: "points while Trucking up",
         currencyInternalName: "pointsinTrucking",
@@ -472,7 +472,7 @@ upgrades: {
      52: {
         title: "B650E Chipset",
         description: "Maximum time in trucking is increased by 50% and IC exp+0.5.",
-        cost: new Decimal("2e708231"),
+        cost: new Decimal("9e708230"),
        
         currencyDisplayName: "points while Trucking up",
         currencyInternalName: "pointsinTrucking",
@@ -485,7 +485,7 @@ upgrades: {
      53: {
         title: "B650 Chipset",
         description: "Automate CPUs, Bifurther-Exponent Coin gain and unlock a new Achievement effect.",
-        cost: new Decimal("2e708233"),
+        cost: new Decimal("8e708232"),
        
         currencyDisplayName: "points while Trucking up",
         currencyInternalName: "pointsinTrucking",
