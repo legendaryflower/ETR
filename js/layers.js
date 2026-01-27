@@ -2510,10 +2510,10 @@ upgrades: {
         tooltip() {return "IncrementCoins+1<sup>0.07</sup>"},
        
     },
-    27: {
+     27: {
         title: "The Second Glance",
         description: "Square the upgrade aboves effect.",
-          cost() { return new Decimal(player.si.current=='ic' ? "e2293410" : 1e27) },
+          cost() { return new Decimal(player.si.current=='ic' ? "e2200515" : 1e27) },
    
     
   
@@ -2526,7 +2526,7 @@ upgrades: {
     31: {
         title: "QoL Incremental",
         description: "Gain 100% of Incremental Coins per second, automate Orbs and divide its req by 1e125.",
-          cost() { return new Decimal(player.si.current=='ic' ? "e2293430" : 1e29) },
+          cost() { return new Decimal(player.si.current=='ic' ? "e2200516" : 1e29) },
    
    
     
@@ -2540,7 +2540,7 @@ upgrades: {
     32: {
         title: "Arsenal Incremental",
         description: "Points multiply Exponent Points gain.",
-             cost() { return new Decimal(player.si.current=='ic' ? "e2940871" : 3e31) },
+             cost() { return new Decimal(player.si.current=='ic' ? "e2814987" : 3e31) },
         softcapStart() {
             let softcap = new Decimal("1e1300")
                         if ((Array.isArray(tmp.si.mastered))?tmp.si.mastered.includes(this.layer):false) softcap = softcap.pow(10000)
@@ -2571,7 +2571,7 @@ upgrades: {
     33: {
         title: "Bombard",
         description() {return (((Array.isArray(tmp.si.mastered))?tmp.si.mastered.includes(this.layer):false)? "Tesseract":"Square")+" points gain."},
-      cost() { return new Decimal(player.si.current=='ic' ? "e2940879" : 1e35) },
+      cost() { return new Decimal(player.si.current=='ic' ? "e2814987" : 1e35) },
    
    
     
@@ -2587,7 +2587,7 @@ upgrades: {
     34: {
         title: "Not Nice",
         description: "Unlock Universe Dimension III.",
-        cost() { return new Decimal(player.si.current=='ic' ? "e2940888" : 1e69) },
+        cost() { return new Decimal(player.si.current=='ic' ? "e2814987" : 1e69) },
    
    
     
@@ -2603,7 +2603,7 @@ upgrades: {
     35: {
         title: "Scaled to the Brim",
         description: "Cost scalings for the first 2 Exponent Buyables are reduced.",
-           cost() { return new Decimal(player.si.current=='ic' ? "e3232610" : 1e89) },
+           cost() { return new Decimal(player.si.current=='ic' ? "e3227976" : 1e89) },
    
    
     
@@ -2619,19 +2619,19 @@ upgrades: {
     36: {
         title: "Unorbbed",
         description: "Orbs cost base exp is reduced by 1 and it resets nothing.",
-         cost() { return new Decimal(player.si.current=='ic' ? "e3667805" : 1e89) },
+         cost() { return new Decimal(player.si.current=='ic' ? "e3227976" : 1e89) },
         unlocked() {return hasUpgrade("ic",35)},
     },
     37: {
         title: "The Final Glance",
         description: "Square 'The First Glance' upgrade again, and buy max Orbs. Exponent base exponent is subtracted by 0.5.",
-           cost() { return new Decimal(player.si.current=='ic' ? "e3667808" : 1e105) },
+           cost() { return new Decimal(player.si.current=='ic' ? "e3227976" : 1e105) },
         unlocked() {return hasUpgrade("ic",36)},
     },
      41: {
         title: "Trapez Diesel",
         description: "Points Softcap<sup>2</sup> starts ^1.11 later.",
-           cost: new Decimal("e3667815"),
+           cost: new Decimal("e3227978"),
    
    
     
@@ -2647,7 +2647,7 @@ upgrades: {
       42: {
         title: "Hyperbolic Bases",
         description: "Cube Superbase Points.",
-           cost: new Decimal("e3667825"),
+           cost: new Decimal("4e3249164"),
    
    
     
@@ -2663,7 +2663,7 @@ upgrades: {
      43: {
         title: "Utoniumic Power?",
         description: "Unlock Elemental Power and Exponent Coin req is divided by e1e7.",
-           cost: new Decimal("e3695099"),
+           cost: new Decimal("4e3249164"),
    
    
     
@@ -2679,7 +2679,7 @@ upgrades: {
      44: {
         title: "Pillaged Incrementals",
         description: "Raise Universal Energy's Effect by 5.",
-           cost: new Decimal("e3851000"),
+           cost: new Decimal("e3449250"),
    
    
     
@@ -2695,7 +2695,7 @@ upgrades: {
        45: {
         title: "Softcap In The Middle",
         description: "Points Softcap starts ^3 later and Points Softcap<sup>2</sup> starts ^1.05 later.",
-           cost: new Decimal("e3860000"),
+           cost: new Decimal("e3449750"),
    
    
     
@@ -2711,7 +2711,7 @@ upgrades: {
       46: {
         title: "Softcap In The Middle",
         description: "Incremental Coins softcap gain starts until 1e1,000,000.",
-           cost: new Decimal("e3920000"),
+           cost: new Decimal("e3461375"),
    
    
     
@@ -2727,7 +2727,7 @@ upgrades: {
      47: {
         title: "Grand Finale II",
         description: "Incremental Coins softcap power is increased to 0.995 and Points Softcap<sup>2</sup> starts an extra ^1.2 later.",
-           cost: new Decimal("e4440000"),
+           cost: new Decimal("e3961165"),
    
    
     
@@ -8064,7 +8064,7 @@ amtMastered() {
 		},
 		masteryGoal: {
 		ex: new Decimal(100000),
-	    ic: new Decimal("e9e6"),
+	    ic: new Decimal("e7e6"),
          o: new Decimal(3439),
              p: new Decimal("1e200000"),
              c: new Decimal("1e100435"),
