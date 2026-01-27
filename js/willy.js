@@ -127,7 +127,7 @@ if ((Array.isArray(tmp.si.mastered))?tmp.si.mastered.includes("c"):false) mult =
                 return eff;
             },
             cap() { let cap = new Decimal(100)
-                if (hasMilestone("truck",15)) return new Decimal("1e307")
+                if (hasMilestone("truck",15)) return new Decimal("1e306")
   if (hasUpgrade("pa",33)) cap = cap.times(1000)
                    
                 return cap; },
