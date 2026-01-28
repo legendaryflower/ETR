@@ -8066,7 +8066,7 @@ amtMastered() {
 		ex: new Decimal(100000),
 	    ic: new Decimal("e7e6"),
          o: new Decimal(3439),
-             p: new Decimal("1e200000"),
+             p: new Decimal("1e187882"),
              c: new Decimal("1e100435"),
 
          s: new Decimal("1e40000"),
