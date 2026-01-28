@@ -6418,7 +6418,7 @@ addLayer("c", {
         11: {
             title: "Cookie Cursor",
             description: "'Points Multiplier' softcap starts later based on your Exponent Points.",
-       cost() { return new Decimal(player.si.current=='c' ? "1e685" : 10) },
+       cost() { return new Decimal(player.si.current=='c' ? "1e672" : 10) },
             unlocked() {return player.c.unlocked},
                softcapStart() {let start = new Decimal("1e12000")
  if ((Array.isArray(tmp.si.mastered))?tmp.si.mastered.includes(this.layer):false) start = start.pow(25)
@@ -6440,7 +6440,7 @@ addLayer("c", {
         21: {
             title: "Cookie Grandma",
             description: "Multiply base point gain based on Points.",
-       cost() { return new Decimal(player.si.current=='c' ? "2e685" : 200) },
+       cost() { return new Decimal(player.si.current=='c' ? "1e673" : 200) },
             unlocked() {return hasUpgrade("c",12)},
             softcapStart() {return new Decimal("1e4e6")},
             effect() {
@@ -6462,7 +6462,7 @@ if (inChallenge("s",11)) return new Decimal(1)
        22: {
             title: "Cookie Farm",
             description: "Multiply base point gain based on Exponent Points.",
-              cost() { return new Decimal(player.si.current=='c' ? "5e685" : 750) },
+              cost() { return new Decimal(player.si.current=='c' ? "1e673" : 750) },
             unlocked() {return hasUpgrade("c",12)},
                     softcapStart() {return new Decimal("1e4e6")},
             effect() {
@@ -6482,7 +6482,7 @@ if (inChallenge("s",11)) return new Decimal(1)
         23: {
             title: "Cookie Mine",
             description: "Incremental Coin gain is multiplied by your current Base Point.",
-                 cost() { return new Decimal(player.si.current=='c' ? "7e685" : 15e3) },
+                 cost() { return new Decimal(player.si.current=='c' ? "1e673" : 15e3) },
             unlocked() {return hasUpgrade("c",12)},
             softcapStart() {return new Decimal("1e2500000")},
          softcapSquaredStart() {return new Decimal("1e3200000")},
@@ -6508,7 +6508,7 @@ if (inChallenge("s",11)) return new Decimal(1)
         24: {
             title: "Cookie Factory",
             description() { return "Autobuy Universe ane Elements buyables every tick. Also, "+(((Array.isArray(tmp.si.mastered))?tmp.si.mastered.includes(this.layer):false)?"raise 'Night Adder' by 1.25.":"multiply 'Night Adder' by 3.5.")},
-                      cost() { return new Decimal(player.si.current=='c' ? "7e685" : 1e5) },
+                      cost() { return new Decimal(player.si.current=='c' ? "1e673" : 1e5) },
             unlocked() {return hasUpgrade("c",12)},
           
            
@@ -6526,14 +6526,14 @@ if (inChallenge("s",11)) return new Decimal(1)
         41: {
             title: "Cookie Bank",
             description: "Unlock Willy.",
-                 cost() { return new Decimal(player.si.current=='c' ? "7e685" : 1e22) },
+                 cost() { return new Decimal(player.si.current=='c' ? "1e673" : 1e22) },
             unlocked() {return player.s.unlocked},
            
         },
         51: {
             title: "Cookie Temple",
             description: "Cookies add to the first Partition capacity and your first partition now adds to Cookie's direct multi.",
-             cost() { return new Decimal(player.si.current=='c' ? "7e685" : 5e22) },
+             cost() { return new Decimal(player.si.current=='c' ? "1e673" : 5e22) },
             unlocked() {return player.s.unlocked},
             effect() {
                 
