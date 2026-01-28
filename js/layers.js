@@ -7141,7 +7141,7 @@ addLayer("pa", {
              if (hasUpgrade("pa",106)) mult = mult.times(upgradeEffect("pa",106))
               
             if (hasAchievement("ach",57)) mult = mult.times(tmp.ach.achievementPower)
- if (hasUpgrade("truck",35)) mult = mult.times(50)
+ if (hasUpgrade("truck",35)&&!hasMilestone("truck",5)) mult = mult.times(1e6)
     if (hasAchievement("ach",72)) mult = mult.pow(tmp.tr.effect2)
     return mult;// Factor in any bonuses multiplying gain here.
 },
