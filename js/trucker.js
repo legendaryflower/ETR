@@ -495,10 +495,10 @@ upgrades: {
         unlocked() {return hasUpgrade("truck",52)&&player.si.mastered.includes("ex")},
       
     },
-      53: {
+          53: {
         title: "A620 Chipset",
         description: "Hydrogen also affects Points Softcap<sup>2</sup>.",
-        cost: new Decimal("1e743598"),
+        cost: new Decimal("5e743587"),
        
         currencyDisplayName: "points while Trucking up",
         currencyInternalName: "pointsinTrucking",
@@ -511,7 +511,7 @@ upgrades: {
      54: {
         title: "X570 Chipset",
         description: "Unlock Elemental Dimension IV.",
-        cost: new Decimal("3e748014"),
+        cost: new Decimal("4e74809"),
        
         currencyDisplayName: "points while Trucking up",
         currencyInternalName: "pointsinTrucking",
